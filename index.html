@@ -1,100 +1,585 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<meta name="theme-color" content="#101525">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#080d1b">
+<meta name="description" content="King Mason Arcade — a collection of free browser games made for keyboard and touch screens.">
 <title>King Mason Arcade</title>
 <style>
-:root{--bg:#0c1020;--panel:#171f35;--line:#2b395a;--gold:#ffca66;--cyan:#61d9e8;--muted:#aab6d0}
-*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b2a49,#0c1020 65%);color:#f5f7ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
-header{padding:25px 18px 18px;text-align:center;border-bottom:1px solid #ffffff16}
-.logo{font-size:clamp(26px,6vw,42px);font-weight:950;letter-spacing:1px;text-shadow:0 3px 22px #e6a83d55}.logo span{color:var(--gold)}
-.tag{color:var(--muted);margin:5px 0 0;font-size:14px}
-main{max-width:1000px;margin:auto;padding:20px 15px 40px}
-h2{font-size:20px;margin:8px 0 13px}.sub{color:var(--muted);font-size:13px;margin-top:-7px;margin-bottom:16px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px}
-.card{background:linear-gradient(145deg,#1c2945,#131a2c);border:1px solid var(--line);border-radius:16px;padding:16px;min-height:165px;display:flex;flex-direction:column}
-.art{height:68px;border-radius:11px;display:grid;place-items:center;font-size:39px;margin-bottom:12px;background:linear-gradient(135deg,#2b4562,#17243b)}
-.card h3{margin:0 0 4px;font-size:17px}.card p{margin:0;color:var(--muted);font-size:13px;line-height:1.4;flex:1}
-button{border:0;border-radius:10px;padding:11px 14px;background:var(--gold);color:#251a09;font-weight:850;font-size:14px;cursor:pointer;margin-top:13px;touch-action:manipulation}
-button.secondary{background:#2a3a5c;color:#eef4ff;border:1px solid #435579}
-button:active{transform:scale(.98)}
-.note{margin-top:20px;padding:13px 15px;background:#121b2d;border:1px solid #293957;border-radius:12px;color:var(--muted);font-size:13px;line-height:1.5}
-#gameScreen{display:none;max-width:900px;margin:0 auto;padding:12px}
-.gamehead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.gamehead h2{margin:0}
-#stage{width:100%;height:min(60vh,520px);min-height:280px;background:#101827;border:1px solid #465675;border-radius:14px;display:block;touch-action:none}
-.hud{display:flex;flex-wrap:wrap;gap:8px;margin:9px 0;color:#dce8ff;font-size:13px}
-.pill{background:#1b2943;padding:7px 10px;border-radius:20px;border:1px solid #354766}
-.controls{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px}
-.controls button{min-width:62px;margin:0;background:#293c60;color:white;border:1px solid #4a6289}
-#message{text-align:center;color:#d5e1f6;font-size:14px;min-height:22px;margin:9px}
-footer{text-align:center;color:#74829e;font-size:12px;padding:20px}
-@media(max-width:500px){.card{min-height:150px}.art{height:58px}#stage{min-height:300px}}
+:root{color-scheme:dark;--bg:#080d1b;--panel:#111a2d;--panel2:#17243c;--line:#2b3b5d;--gold:#ffd06f;--cyan:#6ce6f2;--muted:#a8b7d1;--white:#f5f7ff;--green:#8ce6b0;--shadow:0 18px 55px #0005}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 50% -18%,#263b63 0,#111a31 38%,var(--bg) 72%);color:var(--white);font-family:ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input{font:inherit}
+button{cursor:pointer;touch-action:manipulation}
+button:focus-visible,input:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
+.wrap{width:min(1120px,calc(100% - 32px));margin:auto}
+.topbar{height:72px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #ffffff14}
+.brand{display:flex;align-items:center;gap:10px;font-weight:950;letter-spacing:.06em}
+.brand-mark{width:38px;height:38px;border-radius:12px;background:linear-gradient(145deg,#ffe29a,#d99937);display:grid;place-items:center;color:#251807;font-size:22px;box-shadow:0 5px 20px #e5a83a35}
+.brand-name{font-size:15px}.brand-name span{color:var(--gold)}
+.top-tag{font-size:12px;color:var(--muted);border:1px solid #ffffff20;border-radius:99px;padding:8px 12px}
+.hero{display:grid;grid-template-columns:1.25fr .75fr;align-items:center;gap:24px;padding:42px 0 34px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid #ffd06f50;background:#ffd06f12;color:var(--gold);padding:7px 11px;border-radius:99px;font-weight:800;font-size:11px;letter-spacing:.11em;text-transform:uppercase}
+.hero h1{font-size:clamp(38px,6vw,68px);line-height:.99;letter-spacing:-.055em;margin:17px 0 14px;max-width:680px}
+.hero h1 span{color:var(--gold);text-shadow:0 0 30px #ffd06f30}
+.hero-copy{max-width:570px;color:var(--muted);font-size:15px;line-height:1.7;margin:0}
+.hero-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.primary-btn,.secondary-btn{border:0;border-radius:12px;padding:12px 17px;font-size:14px;font-weight:850}
+.primary-btn{background:linear-gradient(135deg,#ffe19a,#f4b74f);color:#201606;box-shadow:0 8px 25px #e5a83a27}
+.secondary-btn{background:#ffffff0b;color:var(--white);border:1px solid #ffffff20}
+.primary-btn:active,.secondary-btn:active,.play-btn:active{transform:translateY(1px)}
+.hero-panel{position:relative;overflow:hidden;min-height:245px;border-radius:24px;border:1px solid #ffffff1c;background:linear-gradient(145deg,#1d3153,#101a2e 70%);box-shadow:var(--shadow);padding:22px;display:flex;flex-direction:column;justify-content:space-between}
+.hero-panel:before{content:"";position:absolute;width:230px;height:230px;border-radius:50%;right:-55px;top:-68px;background:radial-gradient(circle,#ffd06f42,transparent 68%);pointer-events:none}
+.hero-crown{font-size:45px;filter:drop-shadow(0 5px 16px #ffc44c45)}
+.panel-label{font-size:11px;font-weight:900;color:var(--cyan);letter-spacing:.15em;text-transform:uppercase}
+.panel-title{font-size:26px;font-weight:950;letter-spacing:-.04em;margin:6px 0}
+.panel-copy{font-size:13px;color:var(--muted);line-height:1.5;max-width:270px}
+.mini-stats{display:flex;gap:9px;flex-wrap:wrap;margin-top:17px}
+.mini-stat{border:1px solid #ffffff18;background:#08101f55;border-radius:11px;padding:10px 12px;min-width:90px}
+.mini-stat strong{display:block;font-size:19px;color:var(--gold)}.mini-stat small{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.09em}
+.library{padding:20px 0 56px}
+.section-head{display:flex;align-items:end;justify-content:space-between;gap:15px;margin-bottom:18px}
+.section-head h2{font-size:25px;letter-spacing:-.04em;margin:0}
+.section-head p{font-size:13px;color:var(--muted);margin:5px 0 0}
+.library-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.search-box{flex:1 1 220px;position:relative}
+.search-box input{width:100%;height:44px;background:#111b30;border:1px solid var(--line);border-radius:12px;color:var(--white);padding:0 14px 0 40px;outline:none}
+.search-box input::placeholder{color:#8494b0}
+.search-icon{position:absolute;left:14px;top:12px;color:var(--muted);font-size:16px}
+.filters{display:flex;gap:7px;flex-wrap:wrap}
+.filter-btn{border:1px solid #344565;background:#111b30;color:var(--muted);border-radius:99px;padding:9px 13px;font-size:12px;font-weight:800}
+.filter-btn.active{background:#ffd06f;color:#241807;border-color:#ffd06f}
+.game-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.game-card{position:relative;overflow:hidden;border-radius:18px;border:1px solid var(--line);background:linear-gradient(155deg,#192844,#111a2d 80%);padding:14px;min-height:245px;display:flex;flex-direction:column;transition:transform .18s,border-color .18s,box-shadow .18s}
+.game-card:hover{transform:translateY(-3px);border-color:#6b82aa;box-shadow:0 12px 28px #0004}
+.card-art{height:105px;border-radius:13px;display:grid;place-items:center;position:relative;overflow:hidden;margin-bottom:13px;font-size:49px;background:radial-gradient(circle at 50% 35%,#536e9955,transparent 55%),linear-gradient(135deg,#243b5d,#16243d)}
+.card-art:after{content:"";position:absolute;inset:0;background:linear-gradient(125deg,transparent 38%,#ffffff0b 50%,transparent 62%)}
+.card-tag{position:absolute;left:10px;top:10px;z-index:1;border-radius:99px;padding:5px 8px;font-size:9px;text-transform:uppercase;font-weight:900;letter-spacing:.09em;background:#091222bf;color:#d9e7ff;border:1px solid #ffffff1b}
+.favorite-btn{position:absolute;right:9px;top:9px;z-index:2;border:1px solid #ffffff30;background:#091222c9;color:#c8d3e7;border-radius:99px;width:30px;height:30px;padding:0;font-size:16px}
+.favorite-btn.saved{color:var(--gold);border-color:#ffd06f80}
+.card-title-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.game-card h3{font-size:16px;margin:0 0 5px;letter-spacing:-.02em}
+.game-card p{font-size:12px;line-height:1.5;color:var(--muted);margin:0 0 12px;flex:1}
+.card-meta{font-size:10px;color:#8192b1;margin-bottom:9px;display:flex;justify-content:space-between;gap:6px}
+.play-btn{border:1px solid #ffd06f80;background:linear-gradient(135deg,#ffe19a,#f4b74f);color:#201606;border-radius:10px;padding:10px 12px;font-size:12px;font-weight:950;width:100%}
+.empty-state{display:none;text-align:center;padding:42px 16px;color:var(--muted);border:1px dashed #3d5072;border-radius:16px;background:#ffffff05}
+.empty-state strong{display:block;color:var(--white);font-size:17px;margin-bottom:5px}
+.tip-box{margin-top:20px;border:1px solid #2d4569;background:linear-gradient(110deg,#13233b,#10192b);padding:14px 16px;border-radius:14px;display:flex;gap:12px;align-items:flex-start;color:var(--muted);font-size:12px;line-height:1.6}
+.tip-box b{color:var(--gold)}
+footer{border-top:1px solid #ffffff14;padding:20px 0 28px;text-align:center;font-size:11px;color:#7788a6}
+#gameScreen{display:none;padding:18px 0 44px}
+.game-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.game-title-wrap{display:flex;align-items:center;gap:12px;min-width:0}
+.back-btn{border:1px solid #3a4d70;background:#172540;color:var(--white);border-radius:11px;padding:10px 12px;font-size:12px;font-weight:850;white-space:nowrap}
+.game-title-wrap h2{font-size:clamp(18px,3vw,26px);margin:0;letter-spacing:-.04em}
+.game-actions{display:flex;gap:7px}
+.small-btn{border:1px solid #3a4d70;background:#172540;color:var(--white);border-radius:10px;padding:9px 12px;font-size:11px;font-weight:850}
+.hud{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 10px}
+.hud-pill{border:1px solid #354969;background:#172540;border-radius:99px;padding:7px 11px;color:#dce7f7;font-size:11px;font-weight:750}
+.hud-pill strong{color:var(--gold)}
+.stage-wrap{border:1px solid #425a7e;border-radius:17px;padding:7px;background:#080f1d;box-shadow:var(--shadow);overflow:hidden}
+#stage{display:block;width:100%;height:min(58vh,520px);min-height:280px;border-radius:11px;background:#101b2b;touch-action:pan-y}
+#message{min-height:27px;text-align:center;padding:8px 4px 2px;color:#dce7f6;font-size:13px}
+.control-area{display:flex;justify-content:center;align-items:center;gap:9px;flex-wrap:wrap;margin-top:9px}
+.control-btn{min-width:58px;min-height:45px;border:1px solid #49628b;border-radius:12px;background:linear-gradient(145deg,#283f65,#1a2b49);color:#f6f8ff;font-size:13px;font-weight:900;padding:10px 13px;user-select:none;-webkit-user-select:none;touch-action:none}
+.control-btn.action{background:linear-gradient(145deg,#624e2f,#3b2e1f);border-color:#92713c;color:#ffe2a4}
+.control-hint{text-align:center;color:#8393ae;font-size:11px;margin:11px 0 0}
+.hidden{display:none!important}
+@media(max-width:900px){.game-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:680px){.wrap{width:min(100% - 22px,560px)}.hero{grid-template-columns:1fr;padding:30px 0 22px;gap:17px}.hero-panel{min-height:185px}.hero-crown{font-size:35px}.mini-stats{margin-top:10px}.game-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.game-card{padding:11px;min-height:235px}.card-art{height:88px}.section-head{align-items:start;flex-direction:column}.topbar{height:62px}.top-tag{font-size:10px;padding:7px 9px}.game-top{align-items:flex-start}.game-title-wrap{gap:7px}.back-btn{padding:9px}.game-actions{gap:5px}.small-btn{padding:9px 8px}#stage{height:48vh;min-height:280px}.control-btn{min-width:54px;min-height:48px}}
+@media(max-width:370px){.game-grid{grid-template-columns:1fr}.game-card{min-height:215px}.card-art{height:90px}.brand-name{font-size:13px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
-<header><div class="logo">👑 KING MASON <span>ARCADE</span></div><p class="tag">Pick a game. Play anywhere. Have fun.</p></header>
-<main id="home">
-  <h2>🎮 Game library</h2><p class="sub">A mix of 2D arcade games and 3D-style adventures. Made to work with touch screens and keyboards.</p>
-  <div class="grid">
-    <article class="card"><div class="art">🌲</div><h3>Island Survival</h3><p>Collect supplies, eat berries, and stay alive on a wild island. (2D)</p><button onclick="startGame('survival')">Play game</button></article>
-    <article class="card"><div class="art">🏎️</div><h3>Neon Racer</h3><p>Dodge traffic and see how long you can keep driving. (2D)</p><button onclick="startGame('racer')">Play game</button></article>
-    <article class="card"><div class="art">🏰</div><h3>Castle Maze</h3><p>Explore a first-person, 3D-style maze and find the golden exit. (3D-style)</p><button onclick="startGame('maze')">Play game</button></article>
-    <article class="card"><div class="art">🧠</div><h3>Memory Match</h3><p>Flip the cards and find all the matching pairs. (2D)</p><button onclick="startGame('memory')">Play game</button></article>
+<div id="homeScreen">
+  <header class="topbar wrap">
+    <div class="brand"><div class="brand-mark">♛</div><div class="brand-name">KING MASON <span>ARCADE</span></div></div>
+    <div class="top-tag">✦ TOUCH + KEYBOARD READY</div>
+  </header>
+  <main class="wrap">
+    <section class="hero">
+      <div>
+        <div class="eyebrow">👑 Your personal game zone</div>
+        <h1>Ready to beat<br>your <span>high score?</span></h1>
+        <p class="hero-copy">Jump into quick arcade challenges, explore a castle maze, race through neon streets, or test your brain. Pick a game and start playing.</p>
+        <div class="hero-actions">
+          <button class="primary-btn" id="browseBtn">🎮 Browse games</button>
+          <button class="secondary-btn" id="randomBtn">🎲 Pick for me</button>
+        </div>
+        <div class="mini-stats">
+          <div class="mini-stat"><strong>8</strong><small>Games</small></div>
+          <div class="mini-stat"><strong>4</strong><small>Categories</small></div>
+          <div class="mini-stat"><strong>0</strong><small>Downloads</small></div>
+        </div>
+      </div>
+      <aside class="hero-panel">
+        <div class="hero-crown">👑</div>
+        <div>
+          <div class="panel-label">THE ARCADE IS OPEN</div>
+          <div class="panel-title">King Mason's<br>Game Hall</div>
+          <div class="panel-copy">No accounts. No downloads. Just games that run right in your browser.</div>
+        </div>
+      </aside>
+    </section>
+    <section class="library" id="library">
+      <div class="section-head">
+        <div><h2>🎮 Game library</h2><p>Choose your challenge. Can you beat your best?</p></div>
+      </div>
+      <div class="library-tools">
+        <label class="search-box"><span class="search-icon">⌕</span><input id="searchInput" type="search" placeholder="Search games..." autocomplete="off" aria-label="Search games"></label>
+        <div class="filters" id="filters">
+          <button class="filter-btn active" data-category="all">All games</button>
+          <button class="filter-btn" data-category="action">Action</button>
+          <button class="filter-btn" data-category="adventure">Adventure</button>
+          <button class="filter-btn" data-category="puzzle">Puzzle</button>
+          <button class="filter-btn" data-category="favorites">★ Favorites</button>
+        </div>
+      </div>
+      <div class="game-grid" id="gameGrid"></div>
+      <div class="empty-state" id="emptyState"><strong>No games found</strong>Try another search or category.</div>
+      <div class="tip-box"><span>💡</span><div><b>iPad tip:</b> Use the on-screen buttons below each game. On a keyboard, use the arrow keys or WASD. Your best scores and favorites are saved on this device when browser storage is available. This arcade does not bypass school filters or network restrictions.</div></div>
+    </section>
+  </main>
+  <footer class="wrap">KING MASON ARCADE <span>·</span> Made for fun, one high score at a time.</footer>
+</div>
+
+<main class="wrap" id="gameScreen">
+  <div class="game-top">
+    <div class="game-title-wrap">
+      <button class="back-btn" id="homeBtn">← Arcade</button>
+      <h2 id="gameTitle">Game</h2>
+    </div>
+    <div class="game-actions">
+      <button class="small-btn" id="pauseBtn">Ⅱ Pause</button>
+      <button class="small-btn" id="restartBtn">↻ Restart</button>
+    </div>
   </div>
-  <div class="note"><b>iPad tip:</b> Games use on-screen controls, so you can play with touch. If your school blocks this page or its file, ask a teacher whether personal browser games are allowed. This arcade does not bypass school filters.</div>
+  <div class="hud" id="hud"></div>
+  <div class="stage-wrap"><canvas id="stage" width="960" height="540" aria-label="Game area"></canvas></div>
+  <div id="message" role="status" aria-live="polite">Good luck!</div>
+  <div class="control-area" id="controls"></div>
+  <p class="control-hint" id="controlHint">Use the controls to play.</p>
 </main>
-<section id="gameScreen">
- <div class="gamehead"><h2 id="gameTitle">Game</h2><button class="secondary" onclick="goHome()">← Arcade</button></div>
- <div class="hud" id="hud"></div>
- <canvas id="stage" width="800" height="480"></canvas>
- <div id="message"></div><div class="controls" id="controls"></div>
-</section>
-<footer>King Mason Arcade · Browser games</footer>
+
 <script>
-const $=id=>document.getElementById(id), canvas=$('stage'),ctx=canvas.getContext('2d');
-let game='',raf=0,keys={},state={},last=0,touchDir='';
-function resizeCanvas(){let r=canvas.getBoundingClientRect();let d=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.floor(r.width*d));canvas.height=Math.max(1,Math.floor(r.height*d));ctx.setTransform(d,0,0,d,0,0);}
-function dims(){let r=canvas.getBoundingClientRect();return [r.width,r.height];}
-function goHome(){cancelAnimationFrame(raf);$('gameScreen').style.display='none';$('home').style.display='block';game='';}
-function startGame(name){game=name;$('home').style.display='none';$('gameScreen').style.display='block';resizeCanvas();keys={};$('message').textContent='';setup();last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}
-function setup(){
- const [w,h]=dims();state={score:0,over:false};
- let titles={survival:'🌲 Island Survival',racer:'🏎️ Neon Racer',maze:'🏰 Castle Maze',memory:'🧠 Memory Match'};$('gameTitle').textContent=titles[game];
- let controls=$('controls');controls.innerHTML='';
- if(game==='survival'){state.x=w/2;state.y=h/2;state.food=3;state.wood=0;state.health=100;state.trees=[];for(let i=0;i<18;i++)state.trees.push({x:30+Math.random()*(w-60),y:30+Math.random()*(h-60),type:i%4===0?'berry':'tree'});addPad('↑','up');addPad('←','left');addPad('↓','down');addPad('→','right');addPad('Gather','gather');addPad('Eat','eat');}
- if(game==='racer'){state.x=w/2;state.lanes=[w*.25,w*.5,w*.75];state.obstacles=[];state.spawn=0;state.speed=210;addPad('←','left');addPad('→','right');}
- if(game==='maze'){state.map=['1111111111','1000000001','1011101001','1000101001','1100100001','1000001101','1010000001','1001101001','1000000001','1111111111'];state.px=1.5;state.py=1.5;state.angle=0;state.steps=0;addPad('↑','forward');addPad('←','turnL');addPad('→','turnR');addPad('↓','back');}
- if(game==='memory'){let vals=['🍎','🍎','🚀','🚀','🐸','🐸','⭐','⭐','⚽','⚽','👑','👑'];state.cards=vals.sort(()=>Math.random()-.5).map(v=>({v,up:false,done:false}));state.first=null;state.wait=0;state.moves=0;canvas.onclick=memoryClick;}
- else canvas.onclick=null;
+(function(){
+"use strict";
+const W=960,H=540;
+const $=id=>document.getElementById(id);
+const canvas=$("stage"),ctx=canvas.getContext("2d");
+const catalog=[
+ {id:"racer",name:"Neon Racer",icon:"🏎️",category:"action",tag:"FAST PACED",description:"Switch lanes, dodge traffic, and see how long you can stay on the road.",type:"2D racing",color:"#1b3b58"},
+ {id:"snake",name:"Snake Attack",icon:"🐍",category:"action",tag:"CLASSIC",description:"Eat the glowing dots, grow longer, and try not to run into yourself.",type:"Arcade classic",color:"#174837"},
+ {id:"breaker",name:"Brick Breaker",icon:"🧱",category:"action",tag:"SKILL",description:"Bounce the ball, smash every brick, and keep it from falling.",type:"2D arcade",color:"#52334b"},
+ {id:"space",name:"Space Defender",icon:"🚀",category:"action",tag:"HIGH SCORE",description:"Protect your ship, blast incoming asteroids, and survive the waves.",type:"2D shooter",color:"#23365c"},
+ {id:"maze",name:"Castle Maze",icon:"🏰",category:"adventure",tag:"3D STYLE",description:"Explore a first-person castle maze and find the golden exit.",type:"3D-style adventure",color:"#4a3b5b"},
+ {id:"survival",name:"Island Survival",icon:"🌴",category:"adventure",tag:"EXPLORE",description:"Collect wood and berries, manage your health, and complete your island mission.",type:"Top-down adventure",color:"#28533f"},
+ {id:"jumper",name:"Pixel Jumper",icon:"🕹️",category:"adventure",tag:"PLATFORMER",description:"Jump across platforms, grab coins, avoid the gaps, and reach the flag.",type:"2D platformer",color:"#365078"},
+ {id:"memory",name:"Memory Match",icon:"🧠",category:"puzzle",tag:"BRAIN GAME",description:"Flip the tiles, remember what you saw, and match all six pairs.",type:"Puzzle",color:"#59482c"}
+];
+let category="all",search="",favorites=new Set(),bestScores={},currentGame="",state={},keys={},raf=0,last=0,paused=false,hudTimer=0;
+try{favorites=new Set(JSON.parse(localStorage.getItem("kma-favorites")||"[]"));bestScores=JSON.parse(localStorage.getItem("kma-best")||"{}");}catch(e){favorites=new Set();bestScores={};}
+function saveLocal(){
+ try{localStorage.setItem("kma-favorites",JSON.stringify([...favorites]));localStorage.setItem("kma-best",JSON.stringify(bestScores));}catch(e){}
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function renderGames(){
+ const grid=$("gameGrid");grid.innerHTML="";
+ const items=catalog.filter(g=>(category==="all"||(category==="favorites"?favorites.has(g.id):g.category===category))&&(!search||(g.name+" "+g.description+" "+g.type).toLowerCase().includes(search)));
+ items.forEach(g=>{
+  const card=document.createElement("article");card.className="game-card";
+  const best=bestScores[g.id]||0;
+  card.innerHTML='<div class="card-art" style="background:radial-gradient(circle at 50% 35%,#ffffff20,transparent 57%),linear-gradient(135deg,'+g.color+',#111b30)"><span class="card-tag">'+g.tag+'</span><button class="favorite-btn '+(favorites.has(g.id)?"saved":"")+'" aria-label="'+(favorites.has(g.id)?"Remove favorite":"Add favorite")+'" title="Favorite">'+(favorites.has(g.id)?"★":"☆")+'</button><span>'+g.icon+'</span></div><div class="card-title-row"><h3>'+g.name+'</h3></div><p>'+g.description+'</p><div class="card-meta"><span>'+g.type+'</span><span>'+(best?"BEST "+best:"NEW")+'</span></div><button class="play-btn">▶ PLAY NOW</button>';
+  card.querySelector(".play-btn").addEventListener("click",()=>startGame(g.id));
+  card.querySelector(".favorite-btn").addEventListener("click",e=>{e.stopPropagation();if(favorites.has(g.id))favorites.delete(g.id);else favorites.add(g.id);saveLocal();renderGames();});
+  grid.appendChild(card);
+ });
+ $("emptyState").style.display=items.length?"none":"block";
+}
+function setCategory(value){
+ category=value;
+ document.querySelectorAll(".filter-btn").forEach(b=>b.classList.toggle("active",b.dataset.category===category));
+ renderGames();
+}
+$("filters").addEventListener("click",e=>{const b=e.target.closest("[data-category]");if(b)setCategory(b.dataset.category);});
+$("searchInput").addEventListener("input",e=>{search=e.target.value.trim().toLowerCase();renderGames();});
+$("browseBtn").addEventListener("click",()=>$("library").scrollIntoView({behavior:"smooth"}));
+$("randomBtn").addEventListener("click",()=>{const g=catalog[Math.floor(Math.random()*catalog.length)];startGame(g.id);});
+$("homeBtn").addEventListener("click",goHome);
+$("restartBtn").addEventListener("click",()=>{if(currentGame)startGame(currentGame);});
+$("pauseBtn").addEventListener("click",togglePause);
+renderGames();
+
+function setMessage(text){$("message").textContent=text;}
+function setHud(items){$("hud").innerHTML=items.map(v=>'<span class="hud-pill">'+v+'</span>').join("");}
+function button(label,action,mode){
+ const b=document.createElement("button");b.className="control-btn"+(mode==="action"?" action":"");b.textContent=label;b.type="button";
+ b.addEventListener("pointerdown",e=>{
+  e.preventDefault();
+  if(mode==="hold"){keys[action]=true;try{b.setPointerCapture(e.pointerId);}catch(err){}}
+  else handleAction(action);
+ });
+ const release=()=>{keys[action]=false;};
+ b.addEventListener("pointerup",release);b.addEventListener("pointercancel",release);b.addEventListener("lostpointercapture",release);b.addEventListener("pointerleave",e=>{if(e.buttons===0)release();});
+ $("controls").appendChild(b);
+}
+function makeControls(items,hint){
+ $("controls").innerHTML="";
+ items.forEach(i=>button(i.label,i.action,i.mode||"hold"));
+ $("controlHint").textContent=hint||"Use the buttons or keyboard arrows to play.";
+}
+function resetCanvasClick(){
+ canvas.onpointerdown=null;canvas.onpointermove=null;
+}
+function startGame(id){
+ cancelAnimationFrame(raf);currentGame=id;paused=false;keys={};last=0;hudTimer=0;
+ $("homeScreen").style.display="none";$("gameScreen").style.display="block";
+ const g=catalog.find(x=>x.id===id);$("gameTitle").textContent=g.icon+" "+g.name;
+ $("pauseBtn").textContent="Ⅱ Pause";$("pauseBtn").disabled=false;
+ resetCanvasClick();setupGame();updateHud();raf=requestAnimationFrame(loop);
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function goHome(){
+ cancelAnimationFrame(raf);currentGame="";paused=false;keys={};
+ $("gameScreen").style.display="none";$("homeScreen").style.display="block";renderGames();
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+function togglePause(){
+ if(!currentGame||state.over)return;
+ paused=!paused;$("pauseBtn").textContent=paused?"▶ Resume":"Ⅱ Pause";
+ setMessage(paused?"Game paused. Press Resume when you're ready.":"Back in the game!");
+ if(!paused){last=0;raf=requestAnimationFrame(loop);}else cancelAnimationFrame(raf);
+}
+function setupGame(){
+ const g=currentGame;
+ state={over:false,elapsed:0,score:0};
+ if(g==="racer"){
+  state.lane=1;state.obstacles=[];state.spawn=.6;state.speed=240;state.lives=3;
+  makeControls([{label:"◀ LEFT",action:"left",mode:"action"},{label:"RIGHT ▶",action:"right",mode:"action"}],"Tap left or right, or use the ← → keys.");
+ }
+ if(g==="snake"){
+  state.cols=24;state.rows=13;state.cell=34;state.ox=72;state.oy=42;
+  state.snake=[{x:8,y:6},{x:7,y:6},{x:6,y:6}];state.dir={x:1,y:0};state.nextDir={x:1,y:0};state.food=placeFood();state.tick=0;state.score=0;
+  makeControls([{label:"▲",action:"up",mode:"action"},{label:"◀",action:"left",mode:"action"},{label:"▼",action:"down",mode:"action"},{label:"▶",action:"right",mode:"action"}],"Tap a direction or use the arrow keys. Don't hit the walls or your tail.");
+ }
+ if(g==="breaker"){
+  state.paddle={x:W/2-65,y:H-48,w:130,h:14};state.ball={x:W/2,y:H-75,vx:230,vy:-260,r:9};state.bricks=[];state.lives=3;state.score=0;
+  for(let row=0;row<5;row++)for(let col=0;col<10;col++)state.bricks.push({x:68+col*84,y:72+row*38,w:74,h:25,alive:true,color:["#f1796c","#ffbb61","#f0dc74","#6bc9cf","#a68bee"][row]});
+  makeControls([{label:"◀ LEFT",action:"left"},{label:"RIGHT ▶",action:"right"}],"Move the paddle with the buttons or ← →. Keep the ball in play.");
+ }
+ if(g==="space"){
+  state.playerX=W/2;state.bullets=[];state.rocks=[];state.cool=0;state.spawn=.5;state.lives=3;state.score=0;
+  makeControls([{label:"◀ LEFT",action:"left"},{label:"FIRE ✦",action:"fire",mode:"action"},{label:"RIGHT ▶",action:"right"}],"Move with ← → and tap FIRE (or hold Space).");
+ }
+ if(g==="maze"){
+  state.map=makeMaze(11);state.px=1.5;state.py=1.5;state.angle=0;state.steps=0;
+  makeControls([{label:"▲ FORWARD",action:"forward"},{label:"◀ TURN",action:"turnL"},{label:"BACK ▼",action:"back"},{label:"TURN ▶",action:"turnR"}],"Explore the castle. Use forward/back to walk and left/right to turn.");
+ }
+ if(g==="survival"){
+  state.x=W/2;state.y=H/2;state.health=100;state.wood=0;state.food=0;state.resources=[];
+  for(let i=0;i<19;i++)state.resources.push({x:55+Math.random()*(W-110),y:55+Math.random()*(H-110),type:i<12?"tree":"berry",gone:false});
+  makeControls([{label:"▲",action:"up"},{label:"◀",action:"left"},{label:"▼",action:"down"},{label:"▶",action:"right"},{label:"GATHER",action:"gather",mode:"action"},{label:"EAT 🫐",action:"eat",mode:"action"}],"Move with the arrows. Get close to a tree or bush, then tap GATHER.");
+ }
+ if(g==="jumper"){
+  state.x=50;state.y=H-90;state.vx=0;state.vy=0;state.grounded=false;state.coins=0;state.lives=3;state.platforms=[
+   {x:0,y:H-30,w:190,h:30},{x:245,y:H-105,w:145,h:16},{x:455,y:H-185,w:145,h:16},{x:675,y:H-260,w:145,h:16},{x:865,y:H-30,w:95,h:30}
+  ];state.coinList=[{x:310,y:H-140,got:false},{x:525,y:H-220,got:false},{x:745,y:H-295,got:false},{x:900,y:H-70,got:false}];
+  makeControls([{label:"◀ LEFT",action:"left"},{label:"JUMP ⤒",action:"jump",mode:"action"},{label:"RIGHT ▶",action:"right"}],"Hold left/right to move and tap JUMP. Reach the gold flag!");
+ }
+ if(g==="memory"){
+  const vals=["🍎","🚀","🐸","⭐","⚽","👑","🍎","🚀","🐸","⭐","⚽","👑"];
+  state.cards=vals.sort(()=>Math.random()-.5).map(v=>({v,up:false,done:false}));
+  state.first=null;state.second=null;state.mismatch=0;state.moves=0;state.matches=0;state.score=0;
+  makeControls([],"Tap two cards to find matching pairs.");
+  canvas.onpointerdown=memoryClick;
+ }
+}
+function placeFood(){
+ let p;do{p={x:Math.floor(Math.random()*state.cols),y:Math.floor(Math.random()*state.rows)};}while(state.snake.some(s=>s.x===p.x&&s.y===p.y));return p;
+}
+function makeMaze(size){
+ const m=Array.from({length:size},()=>Array(size).fill(1));
+ const stack=[[1,1]];m[1][1]=0;
+ while(stack.length){
+  const cur=stack[stack.length-1],dirs=[[0,-2],[2,0],[0,2],[-2,0]].sort(()=>Math.random()-.5);
+  let moved=false;
+  for(const d of dirs){
+   const nx=cur[0]+d[0],ny=cur[1]+d[1];
+   if(nx>0&&ny>0&&nx<size-1&&ny<size-1&&m[ny][nx]===1){
+    m[cur[1]+d[1]/2][cur[0]+d[0]/2]=0;m[ny][nx]=0;stack.push([nx,ny]);moved=true;break;
+   }
+  }
+  if(!moved)stack.pop();
+ }
+ m[size-2][size-2]=0;
+ return m;
+}
+function recordScore(){
+ let value=Math.floor(state.score||0);
+ if(currentGame==="snake"||currentGame==="breaker"||currentGame==="space")value=Math.floor(state.score||0);
+ if(currentGame==="memory")value=state.matches*10;
+ if(currentGame==="survival")value=state.wood+state.food;
+ if(currentGame==="jumper")value=state.coins;
+ const old=bestScores[currentGame]||0;
+ if(value>old){bestScores[currentGame]=value;saveLocal();renderGames();}
+}
+function finishGame(message,won){
+ if(state.over)return;state.over=true;recordScore();setMessage((won?"🏆 ":"💥 ")+message+" Press Restart to play again or Arcade to choose another game.");updateHud();
+}
+function updateHud(){
+ const s=state;let list=[];
+ if(currentGame==="racer")list=["<strong>Score:</strong> "+Math.floor(s.score),"Lives: "+s.lives];
+ if(currentGame==="snake")list=["<strong>Score:</strong> "+s.score,"Length: "+s.snake.length];
+ if(currentGame==="breaker")list=["<strong>Score:</strong> "+s.score,"Lives: "+s.lives,"Bricks: "+s.bricksLeft];
+ if(currentGame==="space")list=["<strong>Score:</strong> "+s.score,"Lives: "+s.lives];
+ if(currentGame==="maze")list=["Time: "+Math.floor(s.elapsed)+"s","Steps: "+Math.floor(s.steps)];
+ if(currentGame==="survival")list=["Health: "+Math.ceil(s.health)+"%","Wood: "+s.wood+"/8","Berries: "+s.food+"/4"];
+ if(currentGame==="jumper")list=["Coins: "+s.coins,"Lives: "+s.lives];
+ if(currentGame==="memory")list=["Moves: "+s.moves,"Pairs: "+s.matches+"/6"];
+ setHud(list);
+}
+function loop(ts){
+ if(!currentGame||paused)return;
+ const dt=Math.min((ts-last)/1000||0,.035);last=ts;state.elapsed+=dt;
+ ctx.clearRect(0,0,W,H);
+ switch(currentGame){
+  case"racer":drawRacer(dt);break;
+  case"snake":drawSnake(dt);break;
+  case"breaker":drawBreaker(dt);break;
+  case"space":drawSpace(dt);break;
+  case"maze":drawMaze(dt);break;
+  case"survival":drawSurvival(dt);break;
+  case"jumper":drawJumper(dt);break;
+  case"memory":drawMemory(dt);break;
+ }
+ hudTimer+=dt;if(hudTimer>.16){updateHud();hudTimer=0;}
+ raf=requestAnimationFrame(loop);
+}
+function rounded(x,y,w,h,r,fill,stroke){
+ ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.stroke();}
+}
+function text(str,x,y,size,color,align){
+ ctx.fillStyle=color||"#fff";ctx.font="800 "+size+"px system-ui";ctx.textAlign=align||"left";ctx.fillText(str,x,y);
+}
+function drawRacer(dt){
+ const s=state;
+ ctx.fillStyle="#10192a";ctx.fillRect(0,0,W,H);
+ ctx.fillStyle="#1d2939";ctx.fillRect(120,0,720,H);
+ ctx.fillStyle="#26364a";ctx.fillRect(137,0,686,H);
+ ctx.strokeStyle="#f5e5ad";ctx.lineWidth=5;ctx.setLineDash([28,24]);
+ for(let i=1;i<3;i++){ctx.beginPath();ctx.moveTo(120+i*240,0);ctx.lineTo(120+i*240,H);ctx.stroke();}
+ ctx.setLineDash([]);ctx.fillStyle="#60728c";ctx.fillRect(120,0,5,H);ctx.fillRect(835,0,5,H);
+ if(keys.left||keys.right){s.moveRepeat=(s.moveRepeat||0)-dt;if(s.moveRepeat<=0){s.lane=Math.max(0,Math.min(2,s.lane+(keys.left?-1:1)));s.moveRepeat=.16;}}
+ else s.moveRepeat=0;
+ s.speed=Math.min(440,240+s.elapsed*5);s.spawn-=dt;
+ if(s.spawn<=0){s.obstacles.push({lane:Math.floor(Math.random()*3),y:-70,passed:false});s.spawn=Math.max(.42,.9-s.elapsed*.006)+Math.random()*.32;}
+ for(const o of s.obstacles){
+  o.y+=s.speed*dt;
+  const x=240+o.lane*240;
+  rounded(x-28,o.y-34,56,68,13,"#d9564e","#ff9c78");
+  rounded(x-20,o.y-25,40,20,6,"#ffc77d");
+  ctx.fillStyle="#262d43";ctx.fillRect(x-21,o.y+12,42,9);
+  if(!o.passed&&o.y>H-105){o.passed=true;if(o.lane===s.lane){s.lives--;if(s.lives<=0)finishGame("Traffic got the better of you. Final score: "+Math.floor(s.score),false);else setMessage("Bump! You have "+s.lives+" lives left.");}else s.score+=10;}
+ }
+ s.obstacles=s.obstacles.filter(o=>o.y<H+90);if(!s.over)s.score+=dt*3;
+ const px=240+s.lane*240,py=H-100;
+ rounded(px-28,py-39,56,78,15,"#3ad0e5","#b5f8ff");
+ rounded(px-19,py-27,38,22,7,"#b7f4ff");
+ ctx.fillStyle="#12263c";ctx.fillRect(px-24,py+21,13,12);ctx.fillRect(px+11,py+21,13,12);
+ text("NEON HIGHWAY",W/2,36,18,"#b1c8e4","center");
+}
+function changeSnakeDir(d){
+ const v={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}}[d];if(!v)return;
+ if(v.x===-state.dir.x&&v.y===-state.dir.y)return;
+ state.nextDir=v;
+}
+function drawSnake(dt){
+ const s=state;s.tick+=dt;
+ ctx.fillStyle="#0d1d1b";ctx.fillRect(0,0,W,H);
+ rounded(48,25,864,490,18,"#102a24","#285b48");
+ for(let x=0;x<s.cols;x++)for(let y=0;y<s.rows;y++){ctx.fillStyle=(x+y)%2?"#15372e":"#183d33";ctx.fillRect(s.ox+x*s.cell,s.oy+y*s.cell,s.cell-2,s.cell-2);}
+ while(s.tick>.13&&!s.over){
+  s.tick-=.13;s.dir=s.nextDir;
+  const head={x:s.snake[0].x+s.dir.x,y:s.snake[0].y+s.dir.y};
+  const ate=head.x===s.food.x&&head.y===s.food.y;
+  if(head.x<0||head.y<0||head.x>=s.cols||head.y>=s.rows||s.snake.some((p,i)=>i<(ate?s.snake.length:s.snake.length-1)&&p.x===head.x&&p.y===head.y)){finishGame("Snake crash! Final score: "+s.score,false);break;}
+  s.snake.unshift(head);if(ate){s.score+=10;s.food=placeFood();}else s.snake.pop();
+ }
+ ctx.fillStyle="#ff6d72";ctx.beginPath();ctx.arc(s.ox+s.food.x*s.cell+s.cell/2,s.oy+s.food.y*s.cell+s.cell/2,12,0,Math.PI*2);ctx.fill();
+ s.snake.forEach((p,i)=>{rounded(s.ox+p.x*s.cell+2,s.oy+p.y*s.cell+2,s.cell-6,s.cell-6,8,i===0?"#a5f17a":"#4cba78");});
+ const head=s.snake[0];ctx.fillStyle="#123b2a";ctx.beginPath();ctx.arc(s.ox+head.x*s.cell+12,s.oy+head.y*s.cell+12,2.5,0,7);ctx.arc(s.ox+head.x*s.cell+23,s.oy+head.y*s.cell+12,2.5,0,7);ctx.fill();
+ text("EAT THE GLOWING DOTS",W/2,510,16,"#9bd9b7","center");
+}
+function drawBreaker(dt){
+ const s=state,p=s.paddle,b=s.ball;
+ ctx.fillStyle="#15172c";ctx.fillRect(0,0,W,H);
+ for(let i=0;i<12;i++){ctx.fillStyle=i%2?"#1a2040":"#1d2448";ctx.fillRect(i*80,0,1,H);}
+ if(keys.left)p.x-=430*dt;if(keys.right)p.x+=430*dt;p.x=Math.max(20,Math.min(W-p.w-20,p.x));
+ b.x+=b.vx*dt;b.y+=b.vy*dt;
+ if(b.x<b.r||b.x>W-b.r)b.vx*=-1;if(b.y<b.r)b.vy=Math.abs(b.vy);
+ if(b.vy>0&&b.y+b.r>=p.y&&b.y-b.r<=p.y+p.h&&b.x>=p.x&&b.x<=p.x+p.w){b.vy=-Math.abs(b.vy);b.vx=((b.x-(p.x+p.w/2))/(p.w/2))*330;}
+ for(const brick of s.bricks){if(!brick.alive)continue;if(b.x+b.r>brick.x&&b.x-b.r<brick.x+brick.w&&b.y+b.r>brick.y&&b.y-b.r<brick.y+brick.h){brick.alive=false;b.vy*=-1;s.score+=10;s.bricksLeft--;break;}}
+ if(b.y>H+20&&!s.over){s.lives--;if(s.lives<=0)finishGame("Out of balls! Final score: "+s.score,false);else{b.x=W/2;b.y=H-75;b.vx=210;b.vy=-260;setMessage("One more try! "+s.lives+" lives left.");}}
+ s.bricks.forEach(br=>{if(br.alive)rounded(br.x,br.y,br.w,br.h,6,br.color,"#ffffff35");});
+ rounded(p.x,p.y,p.w,p.h,8,"#6bdce9","#d1fbff");
+ ctx.fillStyle="#ffe59b";ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();
+ if(s.bricksLeft===0)finishGame("Every brick smashed! Final score: "+s.score,true);
+ text("BREAK EVERY BRICK",W/2,36,17,"#b9c6e8","center");
+}
+function drawSpace(dt){
+ const s=state;
+ ctx.fillStyle="#080f22";ctx.fillRect(0,0,W,H);
+ for(let i=0;i<70;i++){const x=(i*139)%W,y=(i*83+s.elapsed*24)%H;ctx.fillStyle=i%4?"#7185aa":"#e5d8a6";ctx.fillRect(x,y,2,2);}
+ if(keys.left)s.playerX-=380*dt;if(keys.right)s.playerX+=380*dt;s.playerX=Math.max(32,Math.min(W-32,s.playerX));
+ s.cool-=dt;if((keys.fire||keys.space)&&s.cool<=0){s.bullets.push({x:s.playerX,y:H-78});s.cool=.23;}
+ s.bullets.forEach(b=>b.y-=560*dt);s.bullets=s.bullets.filter(b=>b.y>-10);
+ s.spawn-=dt;if(s.spawn<=0){s.rocks.push({x:35+Math.random()*(W-70),y:-35,r:15+Math.random()*18,spd:100+Math.random()*100,rot:Math.random()*6});s.spawn=Math.max(.28,.8-s.elapsed*.006);}
+ s.rocks.forEach(r=>{r.y+=r.spd*dt;r.rot+=dt;});
+ s.bullets.forEach(b=>{const hit=s.rocks.findIndex(r=>Math.hypot(b.x-r.x,b.y-r.y)<r.r+5);if(hit>=0){s.rocks.splice(hit,1);b.y=-30;s.score+=10;}});
+ s.rocks=s.rocks.filter(r=>{if(r.y>H+35){s.lives--;if(s.lives<=0)finishGame("The asteroid field won. Score: "+s.score,false);return false;}if(r.y>H-105&&Math.abs(r.x-s.playerX)<r.r+17){s.lives--;if(s.lives<=0)finishGame("Your ship was hit. Score: "+s.score,false);return false;}return true;});
+ s.rocks.forEach(r=>{ctx.save();ctx.translate(r.x,r.y);ctx.rotate(r.rot);ctx.fillStyle="#9b8ca3";ctx.strokeStyle="#d2c0ce";ctx.lineWidth=3;ctx.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,rad=r.r*(i%2?.78:1);if(i===0)ctx.moveTo(Math.cos(a)*rad,Math.sin(a)*rad);else ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad);}ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();});
+ s.bullets.forEach(b=>{ctx.fillStyle="#ffe78d";ctx.fillRect(b.x-3,b.y-12,6,18);});
+ ctx.fillStyle="#63ddf1";ctx.beginPath();ctx.moveTo(s.playerX,H-105);ctx.lineTo(s.playerX-27,H-57);ctx.lineTo(s.playerX,H-68);ctx.lineTo(s.playerX+27,H-57);ctx.closePath();ctx.fill();
+ ctx.fillStyle="#d4faff";ctx.fillRect(s.playerX-6,H-82,12,18);
+ text("SPACE DEFENDER",W/2,36,18,"#b9c8eb","center");
+}
+function drawMaze(dt){
+ const s=state;
+ const move=(keys.forward?1:0)-(keys.back?1:0);
+ if(keys.turnL)s.angle-=dt*2.1;if(keys.turnR)s.angle+=dt*2.1;
+ if(move){const nx=s.px+Math.cos(s.angle)*move*dt*2.1,ny=s.py+Math.sin(s.angle)*move*dt*2.1;if(s.map[Math.floor(ny)]&&s.map[Math.floor(ny)][Math.floor(nx)]===0){s.px=nx;s.py=ny;s.steps+=dt*2.1;}}
+ const sky=ctx.createLinearGradient(0,0,0,H/2);sky.addColorStop(0,"#243a5b");sky.addColorStop(1,"#9a9da8");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H/2);
+ const floor=ctx.createLinearGradient(0,H/2,0,H);floor.addColorStop(0,"#625d61");floor.addColorStop(1,"#171c2b");ctx.fillStyle=floor;ctx.fillRect(0,H/2,W,H/2);
+ for(let x=0;x<W;x+=3){
+  const a=s.angle+(x/W-.5)*Math.PI/2.5;let d=0,hit=false;
+  while(d<16&&!hit){d+=.045;const mx=Math.floor(s.px+Math.cos(a)*d),my=Math.floor(s.py+Math.sin(a)*d);if(!s.map[my]||s.map[my][mx]!==0)hit=true;}
+  const corrected=Math.max(.08,d*Math.cos(a-s.angle)),wallH=Math.min(H,H/(corrected*.72)),shade=Math.max(30,185-corrected*10);
+  ctx.fillStyle="rgb("+Math.floor(shade*.72)+","+Math.floor(shade*.82)+","+Math.floor(shade)+")";ctx.fillRect(x,(H-wallH)/2,3,wallH);
+ }
+ // Small map helps navigation.
+ const cell=8,ox=W-112,oy=22;
+ rounded(ox-8,oy-8,104,104,10,"#081221c9","#ffffff45");
+ for(let y=0;y<s.map.length;y++)for(let x=0;x<s.map[y].length;x++){ctx.fillStyle=s.map[y][x]?"#42516c":"#a9b6c9";ctx.fillRect(ox+x*cell,oy+y*cell,cell-1,cell-1);}
+ ctx.fillStyle="#ffe18c";ctx.fillRect(ox+9*cell,oy+9*cell,cell-1,cell-1);
+ ctx.fillStyle="#65e6f1";ctx.beginPath();ctx.arc(ox+s.px*cell,oy+s.py*cell,4,0,Math.PI*2);ctx.fill();
+ text("FIND THE GOLD EXIT",W/2,39,17,"#fff0c4","center");
+ if(Math.hypot(s.px-9.5,s.py-9.5)<.45)finishGame("You escaped the castle maze in "+Math.floor(s.elapsed)+" seconds!",true);
+}
+function drawSurvival(dt){
+ const s=state;
+ ctx.fillStyle="#1f563c";ctx.fillRect(0,0,W,H);
+ for(let x=0;x<W;x+=38)for(let y=0;y<H;y+=38){ctx.fillStyle=((x+y)/38)%2?"#286744":"#2b7048";ctx.fillRect(x,y,36,36);}
+ // Shoreline
+ ctx.fillStyle="#d9bf86";ctx.fillRect(0,0,W,15);ctx.fillRect(0,H-15,W,15);ctx.fillRect(0,0,15,H);ctx.fillRect(W-15,0,15,H);
+ for(const o of s.resources){if(o.gone)continue;if(o.type==="tree"){ctx.fillStyle="#775036";ctx.fillRect(o.x-7,o.y-2,14,24);ctx.fillStyle="#185a38";ctx.beginPath();ctx.arc(o.x,o.y-8,24,0,7);ctx.fill();ctx.fillStyle="#287c49";ctx.beginPath();ctx.arc(o.x-12,o.y-17,13,0,7);ctx.arc(o.x+13,o.y-15,14,0,7);ctx.fill();}else{ctx.fillStyle="#24633b";ctx.beginPath();ctx.arc(o.x,o.y,15,0,7);ctx.fill();ctx.fillStyle="#ff8db0";ctx.beginPath();ctx.arc(o.x-6,o.y-4,4,0,7);ctx.arc(o.x+6,o.y+2,4,0,7);ctx.fill();}}
+ const dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0),len=Math.hypot(dx,dy)||1;
+ s.x=Math.max(28,Math.min(W-28,s.x+dx/len*190*dt));s.y=Math.max(28,Math.min(H-28,s.y+dy/len*190*dt));
+ s.health=Math.max(0,s.health-dt*.38);
+ if(s.health<=0)finishGame("Your island supplies ran out. You collected "+s.wood+" wood and "+s.food+" berries.",false);
+ ctx.fillStyle="#e7c89a";ctx.beginPath();ctx.arc(s.x,s.y,15,0,7);ctx.fill();ctx.fillStyle="#263a55";ctx.fillRect(s.x-10,s.y-7,20,16);ctx.fillStyle="#fff";ctx.fillRect(s.x-6,s.y-8,3,3);ctx.fillRect(s.x+3,s.y-8,3,3);
+ if(s.wood>=8&&s.food>=4)finishGame("Island mission complete! You gathered enough supplies.",true);
+ text("ISLAND SUPPLY MISSION",W/2,37,18,"#e9f4d4","center");
+}
+function handleAction(action){
+ if(!currentGame||state.over)return;
+ if(currentGame==="racer"&&(action==="left"||action==="right"))state.lane=Math.max(0,Math.min(2,state.lane+(action==="left"?-1:1)));
+ if(currentGame==="snake")changeSnakeDir(action);
+ if(currentGame==="space"&&action==="fire")keys.fire=true;
+ if(currentGame==="jumper"&&action==="jump"&&state.grounded){state.vy=-520;state.grounded=false;}
+ if(currentGame==="survival"&&action==="gather"){
+  const near=state.resources.find(o=>!o.gone&&Math.hypot(o.x-state.x,o.y-state.y)<62);
+  if(near){near.gone=true;if(near.type==="tree"){state.wood+=2;setMessage("🪵 Collected 2 wood!");}else{state.food+=2;setMessage("🫐 Picked 2 berries!");}}
+  else setMessage("Move closer to a tree or berry bush first.");
+ }
+ if(currentGame==="survival"&&action==="eat"){
+  if(state.food>0&&state.health<100){state.food--;state.health=Math.min(100,state.health+28);setMessage("You ate berries and restored your health.");}
+  else setMessage(state.food===0?"No berries yet. Find a berry bush!":"Your health is already full.");
+ }
+}
+function drawJumper(dt){
+ const s=state;
+ const sky=ctx.createLinearGradient(0,0,0,H);sky.addColorStop(0,"#192d54");sky.addColorStop(1,"#416d83");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H);
+ for(let i=0;i<6;i++){ctx.fillStyle="#ffffff12";ctx.beginPath();ctx.arc((i*187+80)%W,70+(i%3)*45,30+(i%2)*12,0,7);ctx.fill();}
+ if(keys.left)s.vx=-260;else if(keys.right)s.vx=260;else s.vx*=.78;
+ s.x+=s.vx*dt;s.x=Math.max(10,Math.min(W-25,s.x));
+ const oldBottom=s.y+31;s.vy+=1200*dt;s.y+=s.vy*dt;s.grounded=false;
+ s.platforms.forEach(p=>{if(s.vy>=0&&oldBottom<=p.y&&s.y+31>=p.y&&s.x+20>p.x&&s.x-12<p.x+p.w){s.y=p.y-31;s.vy=0;s.grounded=true;}});
+ s.coinList.forEach(c=>{if(!c.got&&Math.hypot(s.x-c.x,s.y-c.y)<34){c.got=true;s.coins++;}});
+ if(s.y>H+70){s.lives--;if(s.lives<=0)finishGame("You fell off the platforms. Coins collected: "+s.coins,false);else{s.x=50;s.y=H-90;s.vy=0;setMessage("Watch the gaps! "+s.lives+" lives remaining.");}}
+ s.platforms.forEach(p=>{rounded(p.x,p.y,p.w,p.h,7,"#8a6849","#ddbb83");ctx.fillStyle="#4c8c5a";ctx.fillRect(p.x,p.y,p.w,6);});
+ s.coinList.forEach(c=>{if(c.got)return;ctx.fillStyle="#ffe178";ctx.beginPath();ctx.arc(c.x,c.y,12,0,7);ctx.fill();ctx.strokeStyle="#fff0ae";ctx.lineWidth=3;ctx.stroke();});
+ // Player
+ rounded(s.x-13,s.y-27,27,31,7,"#5ad8eb","#c0faff");ctx.fillStyle="#172f51";ctx.fillRect(s.x-7,s.y-18,4,4);ctx.fillRect(s.x+3,s.y-18,4,4);
+ // Goal flag
+ ctx.fillStyle="#e8e1bd";ctx.fillRect(915,H-130,5,100);ctx.fillStyle="#ffcf65";ctx.beginPath();ctx.moveTo(920,H-128);ctx.lineTo(958,H-112);ctx.lineTo(920,H-96);ctx.closePath();ctx.fill();
+ if(s.x>W-56&&s.y>H-170)finishGame("You reached the flag! You collected "+s.coins+" coins.",true);
+ text("REACH THE GOLD FLAG",W/2,35,18,"#fff0bd","center");
+}
+function drawMemory(){
+ const s=state;ctx.fillStyle="#101b31";ctx.fillRect(0,0,W,H);
+ const cw=166,ch=116,gap=17,startX=(W-(cw*4+gap*3))/2,startY=45;
+ s.cards.forEach((c,i)=>{
+  const x=startX+(i%4)*(cw+gap),y=startY+Math.floor(i/4)*(ch+gap);
+  const face=c.up||c.done;
+  rounded(x,y,cw,ch,15,c.done?"#265e51":face?"#f2d28c":"#263d62",c.done?"#8ce6b0":"#617ba7");
+  if(face){text(c.v,x+cw/2,y+75,52,c.done?"#f5fff9":"#26314a","center");}
+  else{text("?",x+cw/2,y+76,49,"#dce8ff","center");}
+ });
+ if(s.mismatch>0){s.mismatch-=.016;if(s.mismatch<=0){s.cards[s.first].up=false;s.cards[s.second].up=false;s.first=null;s.second=null;s.mismatch=0;}}
+ text("FIND ALL SIX MATCHING PAIRS",W/2,510,17,"#c8d8f4","center");
+ if(s.matches===6&&!s.over)finishGame("Perfect match! You found all six pairs in "+s.moves+" moves.",true);
+}
+function memoryClick(e){
+ if(currentGame!=="memory"||state.over||state.mismatch>0)return;
+ const r=canvas.getBoundingClientRect(),x=(e.clientX-r.left)*W/r.width,y=(e.clientY-r.top)*H/r.height;
+ const cw=166,ch=116,gap=17,startX=(W-(cw*4+gap*3))/2,startY=45;
+ const col=Math.floor((x-startX)/(cw+gap)),row=Math.floor((y-startY)/(ch+gap));
+ if(col<0||col>3||row<0||row>2)return;
+ const idx=row*4+col,c=state.cards[idx];
+ if(!c||c.up||c.done)return;
+ c.up=true;
+ if(state.first===null){state.first=idx;return;}
+ state.second=idx;state.moves++;
+ const a=state.cards[state.first],b=state.cards[state.second];
+ if(a.v===b.v){a.done=true;b.done=true;state.matches++;state.score+=10;state.first=null;state.second=null;setMessage("Match! Keep going.");}
+ else{state.mismatch=.75;setMessage("Not a match. Try to remember those cards!");}
  updateHud();
 }
-function addPad(label,act){let b=document.createElement('button');b.textContent=label;b.onpointerdown=e=>{e.preventDefault();keys[act]=true;if(game==='survival'&&(act==='gather'||act==='eat'))action(act);};b.onpointerup=b.onpointerleave=()=>keys[act]=false;$('controls').appendChild(b);}
-function updateHud(){if(game==='survival')$('hud').innerHTML=`<span class="pill">❤️ Health: ${Math.ceil(state.health)}</span><span class="pill">🪵 Wood: ${state.wood}</span><span class="pill">🫐 Berries: ${state.food}</span><span class="pill">⭐ Score: ${state.score}</span>`;if(game==='racer')$('hud').innerHTML=`<span class="pill">⭐ Score: ${state.score}</span><span class="pill">Avoid the traffic!</span>`;if(game==='maze')$('hud').innerHTML=`<span class="pill">Find the gold exit</span><span class="pill">Steps: ${state.steps}</span>`;if(game==='memory')$('hud').innerHTML=`<span class="pill">Moves: ${state.moves}</span><span class="pill">Match all 6 pairs</span>`;}
-function action(a){if(game!=='survival'||state.over)return;if(a==='gather'){let t=state.trees.find(o=>!o.gone&&Math.hypot(o.x-state.x,o.y-state.y)<58);if(t){t.gone=true;if(t.type==='berry'){state.food+=2;$('message').textContent='You picked 2 berries!';}else{state.wood+=2;$('message').textContent='You collected 2 wood!';}state.score+=5;}else $('message').textContent='Move closer to a tree or berry bush.';}if(a==='eat'){if(state.food>0&&state.health<100){state.food--;state.health=Math.min(100,state.health+25);$('message').textContent='You ate berries. Health restored!';}else $('message').textContent=state.food===0?'No berries. Find a berry bush!':'Your health is already full.';}updateHud();}
-function loop(ts){if(!game)return;let dt=Math.min((ts-last)/1000||0,.04);last=ts;let [w,h]=dims();ctx.clearRect(0,0,w,h);
- if(game==='survival')drawSurvival(dt,w,h);if(game==='racer')drawRacer(dt,w,h);if(game==='maze')drawMaze(dt,w,h);if(game==='memory')drawMemory(w,h);
- raf=requestAnimationFrame(loop);}
-function drawSurvival(dt,w,h){ctx.fillStyle='#315f3d';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#3e754a';for(let x=0;x<w;x+=35){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}for(let y=0;y<h;y+=35){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
- for(let o of state.trees){if(o.gone)continue;ctx.fillStyle=o.type==='berry'?'#397e4b':'#68452d';ctx.beginPath();ctx.arc(o.x,o.y,17,0,7);ctx.fill();ctx.fillStyle=o.type==='berry'?'#d44c87':'#26713c';ctx.beginPath();ctx.arc(o.x,o.y-13,23,0,7);ctx.fill();if(o.type==='berry'){ctx.fillStyle='#ff779e';ctx.fillRect(o.x-6,o.y-17,5,5);ctx.fillRect(o.x+6,o.y-8,5,5);}}
- let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0);let nx=state.x+dx*145*dt,ny=state.y+dy*145*dt;state.x=Math.max(15,Math.min(w-15,nx));state.y=Math.max(15,Math.min(h-15,ny));state.score+=dt*.5;
- ctx.fillStyle='#f1d09a';ctx.beginPath();ctx.arc(state.x,state.y,12,0,7);ctx.fill();ctx.fillStyle='#27344c';ctx.fillRect(state.x-7,state.y-5,14,15);ctx.fillStyle='#fff';ctx.fillRect(state.x-5,state.y-8,3,3);ctx.fillRect(state.x+3,state.y-8,3,3);
- state.health=Math.max(0,state.health-dt*.35);if(state.health<=0&&!state.over){state.over=true;$('message').textContent='You ran out of health! Press Arcade and try again.';}updateHud();}
-function drawRacer(dt,w,h){ctx.fillStyle='#121c2c';ctx.fillRect(0,0,w,h);ctx.fillStyle='#263344';ctx.fillRect(w*.13,0,w*.74,h);ctx.strokeStyle='#e6e5c5';ctx.setLineDash([22,20]);ctx.lineWidth=4;for(let i=1;i<3;i++){ctx.beginPath();ctx.moveTo(w*(.13+.74*i/3),0);ctx.lineTo(w*(.13+.74*i/3),h);ctx.stroke();}ctx.setLineDash([]);
- let lane=state.lanes.reduce((best,x,i)=>Math.abs(x-state.x)<Math.abs(state.lanes[best]-state.x)?i:best,0);if(keys.left)state.x=state.lanes[Math.max(0,lane-1)];if(keys.right)state.x=state.lanes[Math.min(2,lane+1)];
- state.spawn-=dt;if(state.spawn<=0){state.obstacles.push({lane:Math.floor(Math.random()*3),y:-45});state.spawn=.8+Math.random()*.65;}
- for(let o of state.obstacles){o.y+=state.speed*dt;let ox=state.lanes[o.lane];ctx.fillStyle='#e65c49';ctx.fillRect(ox-18,o.y-25,36,48);ctx.fillStyle='#ffc66a';ctx.fillRect(ox-12,o.y-19,24,8);if(o.y>h-75&&o.y<h-15&&Math.abs(ox-state.x)<27&&!state.over){state.over=true;$('message').textContent='Crash! Final score: '+Math.floor(state.score)+'. Press Arcade to race again.';}}
- state.obstacles=state.obstacles.filter(o=>o.y<h+60);if(!state.over)state.score+=dt*10;ctx.fillStyle='#52d7ee';ctx.fillRect(state.x-15,h-70,30,48);ctx.fillStyle='#b9f7ff';ctx.fillRect(state.x-9,h-63,18,12);ctx.fillStyle='#fff';ctx.font='bold 16px system-ui';ctx.fillText('SCORE '+Math.floor(state.score),12,24);updateHud();}
-function drawMaze(dt,w,h){let move=0;if(keys.forward)move=1;if(keys.back)move=-1;if(move){let nx=state.px+Math.cos(state.angle)*move*dt*2,ny=state.py+Math.sin(state.angle)*move*dt*2;if(state.map[Math.floor(ny)]?.[Math.floor(nx)]==='0'){state.px=nx;state.py=ny;state.steps++;}}if(keys.turnL)state.angle-=dt*2.1;if(keys.turnR)state.angle+=dt*2.1;
- // Ray-cast wall columns for a simple first-person 3D-style view
- ctx.fillStyle='#91b6d0';ctx.fillRect(0,0,w,h/2);ctx.fillStyle='#48434b';ctx.fillRect(0,h/2,w,h/2);
- for(let x=0;x<w;x+=2){let a=state.angle+(x/w-.5)*Math.PI/2;let d=0,hit=false;while(d<14&&!hit){d+=.035;let mx=Math.floor(state.px+Math.cos(a)*d),my=Math.floor(state.py+Math.sin(a)*d);if(state.map[my]?.[mx]!=='0')hit=true;}let corrected=d*Math.cos(a-state.angle);let wallH=Math.min(h,h/(corrected*.72));let shade=Math.max(35,190-corrected*13);ctx.fillStyle=`rgb(${shade*.75},${shade*.82},${shade})`;ctx.fillRect(x,(h-wallH)/2,2,wallH);}
- // golden exit marker when near goal
- if(Math.hypot(state.px-8.4,state.py-8.4)<.8){ctx.fillStyle='#ffda65';ctx.font='bold 25px system-ui';ctx.fillText('YOU ESCAPED!',w/2-85,55);$('message').textContent='You found the exit! Great exploring.';}else $('message').textContent='Use arrows to explore the maze.';updateHud();}
-function drawMemory(w,h){ctx.fillStyle='#131e33';ctx.fillRect(0,0,w,h);let cols=4,gap=9,cw=Math.min(100,(w-50)/4),ch=Math.min(85,(h-80)/3),total=cols*cw+3*gap,start=(w-total)/2;state.cards.forEach((c,i)=>{let x=start+(i%4)*(cw+gap),y=18+Math.floor(i/4)*(ch+gap);ctx.fillStyle=c.done?'#285c53':c.up?'#e5bd70':'#344b70';ctx.beginPath();ctx.roundRect(x,y,cw,ch,10);ctx.fill();ctx.fillStyle=c.up||c.done?'#172338':'#e7efff';ctx.font=`${Math.min(35,ch*.5)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.up||c.done?c.v:'?',x+cw/2,y+ch/2);});ctx.textAlign='start';}
-function memoryClick(e){if(game!=='memory')return;let r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,w=r.width,h=r.height,cols=4,gap=9,cw=Math.min(100,(w-50)/4),ch=Math.min(85,(h-80)/3),total=cols*cw+3*gap,start=(w-total)/2;let col=Math.floor((x-start)/(cw+gap)),row=Math.floor((y-18)/(ch+gap));if(col<0||col>3||row<0||row>2)return;let i=row*4+col,c=state.cards[i];if(!c||c.up||c.done||state.wait)return;c.up=true;state.moves++;if(state.first===null)state.first=i;else{let first=state.cards[state.first];if(first.v===c.v){first.done=true;c.done=true;state.first=null;if(state.cards.every(x=>x.done))$('message').textContent='You matched every pair! You win!';}else{state.wait=1;let old=state.first;setTimeout(()=>{if(game==='memory'){state.cards[old].up=false;c.up=false;state.first=null;state.wait=0;}},750);}}updateHud();}
-document.addEventListener('keydown',e=>{let k=e.key.toLowerCase();if(['arrowup','w'].includes(k))keys.forward=keys.up=true;if(['arrowdown','s'].includes(k))keys.back=keys.down=true;if(['arrowleft','a'].includes(k))keys.turnL=keys.left=true;if(['arrowright','d'].includes(k))keys.turnR=keys.right=true;});
-document.addEventListener('keyup',e=>{let k=e.key.toLowerCase();if(['arrowup','w'].includes(k))keys.forward=keys.up=false;if(['arrowdown','s'].includes(k))keys.back=keys.down=false;if(['arrowleft','a'].includes(k))keys.turnL=keys.left=false;if(['arrowright','d'].includes(k))keys.turnR=keys.right=false;});
-window.addEventListener('resize',()=>{if(game){resizeCanvas();}});
+function keyAction(e,down){
+ if(!currentGame)return;
+ const k=e.key.toLowerCase();
+ const arrows=["arrowup","arrowdown","arrowleft","arrowright"," "];
+ if(arrows.includes(k))e.preventDefault();
+ if(currentGame==="snake"){
+  if(down&&!e.repeat){if(k==="arrowup"||k==="w")changeSnakeDir("up");if(k==="arrowdown"||k==="s")changeSnakeDir("down");if(k==="arrowleft"||k==="a")changeSnakeDir("left");if(k==="arrowright"||k==="d")changeSnakeDir("right");}
+  return;
+ }
+ if(currentGame==="racer"){
+  if(down&&!e.repeat){if(k==="arrowleft"||k==="a")handleAction("left");if(k==="arrowright"||k==="d")handleAction("right");}
+  return;
+ }
+ const map={
+  arrowup:"up",w:"up",arrowdown:"down",s:"down",arrowleft:"left",a:"left",arrowright:"right",d:"right",
+  " ":"jump",enter:"fire"
+ };
+ const action=map[k];
+ if(currentGame==="maze"){if(k==="arrowup"||k==="w")keys.forward=down;if(k==="arrowdown"||k==="s")keys.back=down;if(k==="arrowleft"||k==="a")keys.turnL=down;if(k==="arrowright"||k==="d")keys.turnR=down;}
+ else if(currentGame==="survival"||currentGame==="jumper"||currentGame==="breaker"||currentGame==="space"){
+  if(action==="left"||action==="right"||action==="up"||action==="down")keys[action]=down;
+  if(down&&!e.repeat&&currentGame==="jumper"&&action==="jump")handleAction("jump");
+  if(currentGame==="space"&&(k===" "||k==="enter"))keys.fire=down;
+ }
+}
+document.addEventListener("keydown",e=>keyAction(e,true));
+document.addEventListener("keyup",e=>keyAction(e,false));
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&currentGame&&!paused&&!state.over){paused=true;$("pauseBtn").textContent="▶ Resume";cancelAnimationFrame(raf);setMessage("Paused while this tab is hidden. Press Resume to continue.");}});
+canvas.addEventListener("pointermove",e=>{
+ if(currentGame==="breaker"&&e.buttons){const r=canvas.getBoundingClientRect();state.paddle.x=Math.max(20,Math.min(W-state.paddle.w-20,(e.clientX-r.left)*W/r.width-state.paddle.w/2));}
+});
+})();
 </script>
-</body></html>
+</body>
+</html>

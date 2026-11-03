@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#101525">
+<title>King Mason Arcade</title>
+<style>
+:root{--bg:#0c1020;--panel:#171f35;--line:#2b395a;--gold:#ffca66;--cyan:#61d9e8;--muted:#aab6d0}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at top,#1b2a49,#0c1020 65%);color:#f5f7ff;font-family:system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+header{padding:25px 18px 18px;text-align:center;border-bottom:1px solid #ffffff16}
+.logo{font-size:clamp(26px,6vw,42px);font-weight:950;letter-spacing:1px;text-shadow:0 3px 22px #e6a83d55}.logo span{color:var(--gold)}
+.tag{color:var(--muted);margin:5px 0 0;font-size:14px}
+main{max-width:1000px;margin:auto;padding:20px 15px 40px}
+h2{font-size:20px;margin:8px 0 13px}.sub{color:var(--muted);font-size:13px;margin-top:-7px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:13px}
+.card{background:linear-gradient(145deg,#1c2945,#131a2c);border:1px solid var(--line);border-radius:16px;padding:16px;min-height:165px;display:flex;flex-direction:column}
+.art{height:68px;border-radius:11px;display:grid;place-items:center;font-size:39px;margin-bottom:12px;background:linear-gradient(135deg,#2b4562,#17243b)}
+.card h3{margin:0 0 4px;font-size:17px}.card p{margin:0;color:var(--muted);font-size:13px;line-height:1.4;flex:1}
+button{border:0;border-radius:10px;padding:11px 14px;background:var(--gold);color:#251a09;font-weight:850;font-size:14px;cursor:pointer;margin-top:13px;touch-action:manipulation}
+button.secondary{background:#2a3a5c;color:#eef4ff;border:1px solid #435579}
+button:active{transform:scale(.98)}
+.note{margin-top:20px;padding:13px 15px;background:#121b2d;border:1px solid #293957;border-radius:12px;color:var(--muted);font-size:13px;line-height:1.5}
+#gameScreen{display:none;max-width:900px;margin:0 auto;padding:12px}
+.gamehead{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.gamehead h2{margin:0}
+#stage{width:100%;height:min(60vh,520px);min-height:280px;background:#101827;border:1px solid #465675;border-radius:14px;display:block;touch-action:none}
+.hud{display:flex;flex-wrap:wrap;gap:8px;margin:9px 0;color:#dce8ff;font-size:13px}
+.pill{background:#1b2943;padding:7px 10px;border-radius:20px;border:1px solid #354766}
+.controls{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:10px}
+.controls button{min-width:62px;margin:0;background:#293c60;color:white;border:1px solid #4a6289}
+#message{text-align:center;color:#d5e1f6;font-size:14px;min-height:22px;margin:9px}
+footer{text-align:center;color:#74829e;font-size:12px;padding:20px}
+@media(max-width:500px){.card{min-height:150px}.art{height:58px}#stage{min-height:300px}}
+</style>
+</head>
+<body>
+<header><div class="logo">👑 KING MASON <span>ARCADE</span></div><p class="tag">Pick a game. Play anywhere. Have fun.</p></header>
+<main id="home">
+  <h2>🎮 Game library</h2><p class="sub">A mix of 2D arcade games and 3D-style adventures. Made to work with touch screens and keyboards.</p>
+  <div class="grid">
+    <article class="card"><div class="art">🌲</div><h3>Island Survival</h3><p>Collect supplies, eat berries, and stay alive on a wild island. (2D)</p><button onclick="startGame('survival')">Play game</button></article>
+    <article class="card"><div class="art">🏎️</div><h3>Neon Racer</h3><p>Dodge traffic and see how long you can keep driving. (2D)</p><button onclick="startGame('racer')">Play game</button></article>
+    <article class="card"><div class="art">🏰</div><h3>Castle Maze</h3><p>Explore a first-person, 3D-style maze and find the golden exit. (3D-style)</p><button onclick="startGame('maze')">Play game</button></article>
+    <article class="card"><div class="art">🧠</div><h3>Memory Match</h3><p>Flip the cards and find all the matching pairs. (2D)</p><button onclick="startGame('memory')">Play game</button></article>
+  </div>
+  <div class="note"><b>iPad tip:</b> Games use on-screen controls, so you can play with touch. If your school blocks this page or its file, ask a teacher whether personal browser games are allowed. This arcade does not bypass school filters.</div>
+</main>
+<section id="gameScreen">
+ <div class="gamehead"><h2 id="gameTitle">Game</h2><button class="secondary" onclick="goHome()">← Arcade</button></div>
+ <div class="hud" id="hud"></div>
+ <canvas id="stage" width="800" height="480"></canvas>
+ <div id="message"></div><div class="controls" id="controls"></div>
+</section>
+<footer>King Mason Arcade · Browser games</footer>
+<script>
+const $=id=>document.getElementById(id), canvas=$('stage'),ctx=canvas.getContext('2d');
+let game='',raf=0,keys={},state={},last=0,touchDir='';
+function resizeCanvas(){let r=canvas.getBoundingClientRect();let d=Math.min(devicePixelRatio||1,2);canvas.width=Math.max(1,Math.floor(r.width*d));canvas.height=Math.max(1,Math.floor(r.height*d));ctx.setTransform(d,0,0,d,0,0);}
+function dims(){let r=canvas.getBoundingClientRect();return [r.width,r.height];}
+function goHome(){cancelAnimationFrame(raf);$('gameScreen').style.display='none';$('home').style.display='block';game='';}
+function startGame(name){game=name;$('home').style.display='none';$('gameScreen').style.display='block';resizeCanvas();keys={};$('message').textContent='';setup();last=0;cancelAnimationFrame(raf);raf=requestAnimationFrame(loop);}
+function setup(){
+ const [w,h]=dims();state={score:0,over:false};
+ let titles={survival:'🌲 Island Survival',racer:'🏎️ Neon Racer',maze:'🏰 Castle Maze',memory:'🧠 Memory Match'};$('gameTitle').textContent=titles[game];
+ let controls=$('controls');controls.innerHTML='';
+ if(game==='survival'){state.x=w/2;state.y=h/2;state.food=3;state.wood=0;state.health=100;state.trees=[];for(let i=0;i<18;i++)state.trees.push({x:30+Math.random()*(w-60),y:30+Math.random()*(h-60),type:i%4===0?'berry':'tree'});addPad('↑','up');addPad('←','left');addPad('↓','down');addPad('→','right');addPad('Gather','gather');addPad('Eat','eat');}
+ if(game==='racer'){state.x=w/2;state.lanes=[w*.25,w*.5,w*.75];state.obstacles=[];state.spawn=0;state.speed=210;addPad('←','left');addPad('→','right');}
+ if(game==='maze'){state.map=['1111111111','1000000001','1011101001','1000101001','1100100001','1000001101','1010000001','1001101001','1000000001','1111111111'];state.px=1.5;state.py=1.5;state.angle=0;state.steps=0;addPad('↑','forward');addPad('←','turnL');addPad('→','turnR');addPad('↓','back');}
+ if(game==='memory'){let vals=['🍎','🍎','🚀','🚀','🐸','🐸','⭐','⭐','⚽','⚽','👑','👑'];state.cards=vals.sort(()=>Math.random()-.5).map(v=>({v,up:false,done:false}));state.first=null;state.wait=0;state.moves=0;canvas.onclick=memoryClick;}
+ else canvas.onclick=null;
+ updateHud();
+}
+function addPad(label,act){let b=document.createElement('button');b.textContent=label;b.onpointerdown=e=>{e.preventDefault();keys[act]=true;if(game==='survival'&&(act==='gather'||act==='eat'))action(act);};b.onpointerup=b.onpointerleave=()=>keys[act]=false;$('controls').appendChild(b);}
+function updateHud(){if(game==='survival')$('hud').innerHTML=`<span class="pill">❤️ Health: ${Math.ceil(state.health)}</span><span class="pill">🪵 Wood: ${state.wood}</span><span class="pill">🫐 Berries: ${state.food}</span><span class="pill">⭐ Score: ${state.score}</span>`;if(game==='racer')$('hud').innerHTML=`<span class="pill">⭐ Score: ${state.score}</span><span class="pill">Avoid the traffic!</span>`;if(game==='maze')$('hud').innerHTML=`<span class="pill">Find the gold exit</span><span class="pill">Steps: ${state.steps}</span>`;if(game==='memory')$('hud').innerHTML=`<span class="pill">Moves: ${state.moves}</span><span class="pill">Match all 6 pairs</span>`;}
+function action(a){if(game!=='survival'||state.over)return;if(a==='gather'){let t=state.trees.find(o=>!o.gone&&Math.hypot(o.x-state.x,o.y-state.y)<58);if(t){t.gone=true;if(t.type==='berry'){state.food+=2;$('message').textContent='You picked 2 berries!';}else{state.wood+=2;$('message').textContent='You collected 2 wood!';}state.score+=5;}else $('message').textContent='Move closer to a tree or berry bush.';}if(a==='eat'){if(state.food>0&&state.health<100){state.food--;state.health=Math.min(100,state.health+25);$('message').textContent='You ate berries. Health restored!';}else $('message').textContent=state.food===0?'No berries. Find a berry bush!':'Your health is already full.';}updateHud();}
+function loop(ts){if(!game)return;let dt=Math.min((ts-last)/1000||0,.04);last=ts;let [w,h]=dims();ctx.clearRect(0,0,w,h);
+ if(game==='survival')drawSurvival(dt,w,h);if(game==='racer')drawRacer(dt,w,h);if(game==='maze')drawMaze(dt,w,h);if(game==='memory')drawMemory(w,h);
+ raf=requestAnimationFrame(loop);}
+function drawSurvival(dt,w,h){ctx.fillStyle='#315f3d';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#3e754a';for(let x=0;x<w;x+=35){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}for(let y=0;y<h;y+=35){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+ for(let o of state.trees){if(o.gone)continue;ctx.fillStyle=o.type==='berry'?'#397e4b':'#68452d';ctx.beginPath();ctx.arc(o.x,o.y,17,0,7);ctx.fill();ctx.fillStyle=o.type==='berry'?'#d44c87':'#26713c';ctx.beginPath();ctx.arc(o.x,o.y-13,23,0,7);ctx.fill();if(o.type==='berry'){ctx.fillStyle='#ff779e';ctx.fillRect(o.x-6,o.y-17,5,5);ctx.fillRect(o.x+6,o.y-8,5,5);}}
+ let dx=(keys.right?1:0)-(keys.left?1:0),dy=(keys.down?1:0)-(keys.up?1:0);let nx=state.x+dx*145*dt,ny=state.y+dy*145*dt;state.x=Math.max(15,Math.min(w-15,nx));state.y=Math.max(15,Math.min(h-15,ny));state.score+=dt*.5;
+ ctx.fillStyle='#f1d09a';ctx.beginPath();ctx.arc(state.x,state.y,12,0,7);ctx.fill();ctx.fillStyle='#27344c';ctx.fillRect(state.x-7,state.y-5,14,15);ctx.fillStyle='#fff';ctx.fillRect(state.x-5,state.y-8,3,3);ctx.fillRect(state.x+3,state.y-8,3,3);
+ state.health=Math.max(0,state.health-dt*.35);if(state.health<=0&&!state.over){state.over=true;$('message').textContent='You ran out of health! Press Arcade and try again.';}updateHud();}
+function drawRacer(dt,w,h){ctx.fillStyle='#121c2c';ctx.fillRect(0,0,w,h);ctx.fillStyle='#263344';ctx.fillRect(w*.13,0,w*.74,h);ctx.strokeStyle='#e6e5c5';ctx.setLineDash([22,20]);ctx.lineWidth=4;for(let i=1;i<3;i++){ctx.beginPath();ctx.moveTo(w*(.13+.74*i/3),0);ctx.lineTo(w*(.13+.74*i/3),h);ctx.stroke();}ctx.setLineDash([]);
+ let lane=state.lanes.reduce((best,x,i)=>Math.abs(x-state.x)<Math.abs(state.lanes[best]-state.x)?i:best,0);if(keys.left)state.x=state.lanes[Math.max(0,lane-1)];if(keys.right)state.x=state.lanes[Math.min(2,lane+1)];
+ state.spawn-=dt;if(state.spawn<=0){state.obstacles.push({lane:Math.floor(Math.random()*3),y:-45});state.spawn=.8+Math.random()*.65;}
+ for(let o of state.obstacles){o.y+=state.speed*dt;let ox=state.lanes[o.lane];ctx.fillStyle='#e65c49';ctx.fillRect(ox-18,o.y-25,36,48);ctx.fillStyle='#ffc66a';ctx.fillRect(ox-12,o.y-19,24,8);if(o.y>h-75&&o.y<h-15&&Math.abs(ox-state.x)<27&&!state.over){state.over=true;$('message').textContent='Crash! Final score: '+Math.floor(state.score)+'. Press Arcade to race again.';}}
+ state.obstacles=state.obstacles.filter(o=>o.y<h+60);if(!state.over)state.score+=dt*10;ctx.fillStyle='#52d7ee';ctx.fillRect(state.x-15,h-70,30,48);ctx.fillStyle='#b9f7ff';ctx.fillRect(state.x-9,h-63,18,12);ctx.fillStyle='#fff';ctx.font='bold 16px system-ui';ctx.fillText('SCORE '+Math.floor(state.score),12,24);updateHud();}
+function drawMaze(dt,w,h){let move=0;if(keys.forward)move=1;if(keys.back)move=-1;if(move){let nx=state.px+Math.cos(state.angle)*move*dt*2,ny=state.py+Math.sin(state.angle)*move*dt*2;if(state.map[Math.floor(ny)]?.[Math.floor(nx)]==='0'){state.px=nx;state.py=ny;state.steps++;}}if(keys.turnL)state.angle-=dt*2.1;if(keys.turnR)state.angle+=dt*2.1;
+ // Ray-cast wall columns for a simple first-person 3D-style view
+ ctx.fillStyle='#91b6d0';ctx.fillRect(0,0,w,h/2);ctx.fillStyle='#48434b';ctx.fillRect(0,h/2,w,h/2);
+ for(let x=0;x<w;x+=2){let a=state.angle+(x/w-.5)*Math.PI/2;let d=0,hit=false;while(d<14&&!hit){d+=.035;let mx=Math.floor(state.px+Math.cos(a)*d),my=Math.floor(state.py+Math.sin(a)*d);if(state.map[my]?.[mx]!=='0')hit=true;}let corrected=d*Math.cos(a-state.angle);let wallH=Math.min(h,h/(corrected*.72));let shade=Math.max(35,190-corrected*13);ctx.fillStyle=`rgb(${shade*.75},${shade*.82},${shade})`;ctx.fillRect(x,(h-wallH)/2,2,wallH);}
+ // golden exit marker when near goal
+ if(Math.hypot(state.px-8.4,state.py-8.4)<.8){ctx.fillStyle='#ffda65';ctx.font='bold 25px system-ui';ctx.fillText('YOU ESCAPED!',w/2-85,55);$('message').textContent='You found the exit! Great exploring.';}else $('message').textContent='Use arrows to explore the maze.';updateHud();}
+function drawMemory(w,h){ctx.fillStyle='#131e33';ctx.fillRect(0,0,w,h);let cols=4,gap=9,cw=Math.min(100,(w-50)/4),ch=Math.min(85,(h-80)/3),total=cols*cw+3*gap,start=(w-total)/2;state.cards.forEach((c,i)=>{let x=start+(i%4)*(cw+gap),y=18+Math.floor(i/4)*(ch+gap);ctx.fillStyle=c.done?'#285c53':c.up?'#e5bd70':'#344b70';ctx.beginPath();ctx.roundRect(x,y,cw,ch,10);ctx.fill();ctx.fillStyle=c.up||c.done?'#172338':'#e7efff';ctx.font=`${Math.min(35,ch*.5)}px system-ui`;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(c.up||c.done?c.v:'?',x+cw/2,y+ch/2);});ctx.textAlign='start';}
+function memoryClick(e){if(game!=='memory')return;let r=canvas.getBoundingClientRect(),x=e.clientX-r.left,y=e.clientY-r.top,w=r.width,h=r.height,cols=4,gap=9,cw=Math.min(100,(w-50)/4),ch=Math.min(85,(h-80)/3),total=cols*cw+3*gap,start=(w-total)/2;let col=Math.floor((x-start)/(cw+gap)),row=Math.floor((y-18)/(ch+gap));if(col<0||col>3||row<0||row>2)return;let i=row*4+col,c=state.cards[i];if(!c||c.up||c.done||state.wait)return;c.up=true;state.moves++;if(state.first===null)state.first=i;else{let first=state.cards[state.first];if(first.v===c.v){first.done=true;c.done=true;state.first=null;if(state.cards.every(x=>x.done))$('message').textContent='You matched every pair! You win!';}else{state.wait=1;let old=state.first;setTimeout(()=>{if(game==='memory'){state.cards[old].up=false;c.up=false;state.first=null;state.wait=0;}},750);}}updateHud();}
+document.addEventListener('keydown',e=>{let k=e.key.toLowerCase();if(['arrowup','w'].includes(k))keys.forward=keys.up=true;if(['arrowdown','s'].includes(k))keys.back=keys.down=true;if(['arrowleft','a'].includes(k))keys.turnL=keys.left=true;if(['arrowright','d'].includes(k))keys.turnR=keys.right=true;});
+document.addEventListener('keyup',e=>{let k=e.key.toLowerCase();if(['arrowup','w'].includes(k))keys.forward=keys.up=false;if(['arrowdown','s'].includes(k))keys.back=keys.down=false;if(['arrowleft','a'].includes(k))keys.turnL=keys.left=false;if(['arrowright','d'].includes(k))keys.turnR=keys.right=false;});
+window.addEventListener('resize',()=>{if(game){resizeCanvas();}});
+</script>
+</body></html>

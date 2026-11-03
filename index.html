@@ -322,6 +322,7 @@ function recordScore(){
  let value=Math.floor(state.score||0);
  if(currentGame==="snake"||currentGame==="breaker"||currentGame==="space")value=Math.floor(state.score||0);
  if(currentGame==="memory")value=state.matches*10;
+ if(currentGame==="maze")value=Math.max(1,1000-Math.floor(state.elapsed*10));
  if(currentGame==="survival")value=state.wood+state.food;
  if(currentGame==="jumper")value=state.coins;
  const old=bestScores[currentGame]||0;
@@ -357,7 +358,7 @@ function loop(ts){
   case"memory":drawMemory(dt);break;
  }
  hudTimer+=dt;if(hudTimer>.16){updateHud();hudTimer=0;}
- raf=requestAnimationFrame(loop);
+ if(!state.over)raf=requestAnimationFrame(loop);
 }
 function rounded(x,y,w,h,r,fill,stroke){
  ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.stroke();}
@@ -519,7 +520,7 @@ function drawJumper(dt){
  if(s.x>W-56&&s.y>H-170)finishGame("You reached the flag! You collected "+s.coins+" coins.",true);
  text("REACH THE GOLD FLAG",W/2,35,18,"#fff0bd","center");
 }
-function drawMemory(){
+function drawMemory(dt){
  const s=state;ctx.fillStyle="#101b31";ctx.fillRect(0,0,W,H);
  const cw=166,ch=116,gap=17,startX=(W-(cw*4+gap*3))/2,startY=45;
  s.cards.forEach((c,i)=>{
@@ -529,7 +530,7 @@ function drawMemory(){
   if(face){text(c.v,x+cw/2,y+75,52,c.done?"#f5fff9":"#26314a","center");}
   else{text("?",x+cw/2,y+76,49,"#dce8ff","center");}
  });
- if(s.mismatch>0){s.mismatch-=.016;if(s.mismatch<=0){s.cards[s.first].up=false;s.cards[s.second].up=false;s.first=null;s.second=null;s.mismatch=0;}}
+ if(s.mismatch>0){s.mismatch-=dt;if(s.mismatch<=0){s.cards[s.first].up=false;s.cards[s.second].up=false;s.first=null;s.second=null;s.mismatch=0;}}
  text("FIND ALL SIX MATCHING PAIRS",W/2,510,17,"#c8d8f4","center");
  if(s.matches===6&&!s.over)finishGame("Perfect match! You found all six pairs in "+s.moves+" moves.",true);
 }

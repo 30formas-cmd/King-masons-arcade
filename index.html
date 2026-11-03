@@ -268,6 +268,7 @@ function setupGame(){
  if(g==="breaker"){
   state.paddle={x:W/2-65,y:H-48,w:130,h:14};state.ball={x:W/2,y:H-75,vx:230,vy:-260,r:9};state.bricks=[];state.lives=3;state.score=0;
   for(let row=0;row<5;row++)for(let col=0;col<10;col++)state.bricks.push({x:68+col*84,y:72+row*38,w:74,h:25,alive:true,color:["#f1796c","#ffbb61","#f0dc74","#6bc9cf","#a68bee"][row]});
+  state.bricksLeft=state.bricks.length;
   makeControls([{label:"◀ LEFT",action:"left"},{label:"RIGHT ▶",action:"right"}],"Move the paddle with the buttons or ← →. Keep the ball in play.");
  }
  if(g==="space"){

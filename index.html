@@ -111,7 +111,7 @@ footer{border-top:1px solid #ffffff14;padding:20px 0 28px;text-align:center;font
         </div>
         <div class="mini-stats">
           <div class="mini-stat"><strong>10</strong><small>Games</small></div>
-          <div class="mini-stat"><strong>4</strong><small>Categories</small></div>
+          <div class="mini-stat"><strong>5</strong><small>Categories</small></div>
           <div class="mini-stat"><strong>0</strong><small>Downloads</small></div>
         </div>
       </div>
@@ -173,7 +173,7 @@ const $=id=>document.getElementById(id);
 const canvas=$("stage"),ctx=canvas.getContext("2d");
 const catalog=[
  {id:"racer",name:"Neon Racer",icon:"🏎️",category:"driving",tag:"TRAFFIC RUSH",description:"Race down a glowing highway, dodge traffic, collect points, and beat your distance record.",type:"Highway driving",color:"#1b3b58"},
- {id:"drift",name:"Drift Circuit",icon:"🏁",category:"driving",tag:"NEW · DRIVING",description:"Steer around a winding race circuit, collect boost rings, and chase your best lap score.",type:"Circuit racer",color:"#284b56"},
+ {id:"drift",name:"Drift Circuit",icon:"🏁",category:"driving",tag:"NEW · DRIVING",description:"Steer around a winding race circuit, dodge traffic, use boosts, and chase your best score.",type:"Circuit racer",color:"#284b56"},
  {id:"parking",name:"Parking Pro",icon:"🅿️",category:"driving",tag:"NEW · DRIVING",description:"Drive carefully through a parking lot and line your car up inside the glowing parking bay.",type:"Driving challenge",color:"#43516b"},
  {id:"snake",name:"Snake Attack",icon:"🐍",category:"action",tag:"CLASSIC",description:"Eat the glowing dots, grow longer, and try not to run into yourself.",type:"Arcade classic",color:"#174837"},
  {id:"breaker",name:"Brick Breaker",icon:"🧱",category:"action",tag:"SKILL",description:"Bounce the ball, smash every brick, and keep it from falling.",type:"2D arcade",color:"#52334b"},
@@ -460,8 +460,8 @@ function drawSnake(dt){
   if(head.x<0||head.y<0||head.x>=s.cols||head.y>=s.rows||s.snake.some((p,i)=>i<(ate?s.snake.length:s.snake.length-1)&&p.x===head.x&&p.y===head.y)){finishGame("Snake crash! Final score: "+s.score,false);break;}
   s.snake.unshift(head);if(ate){s.score+=10;s.food=placeFood();}else s.snake.pop();
  }
- ctx.fillStyle="#ff6d72";ctx.beginPath();ctx.arc(s.ox+s.food.x*s.cell+s.cell/2,s.oy+s.food.y*s.cell+s.cell/2,12,0,Math.PI*2);ctx.fill();
- s.snake.forEach((p,i)=>{rounded(s.ox+p.x*s.cell+2,s.oy+p.y*s.cell+2,s.cell-6,s.cell-6,8,i===0?"#a5f17a":"#4cba78");});
+ ctx.save();ctx.shadowColor="#ff647b";ctx.shadowBlur=22;ctx.fillStyle="#ff6d82";ctx.beginPath();ctx.arc(s.ox+s.food.x*s.cell+s.cell/2,s.oy+s.food.y*s.cell+s.cell/2,12,0,Math.PI*2);ctx.fill();ctx.restore();
+ s.snake.forEach((p,i)=>{const grad=ctx.createLinearGradient(s.ox+p.x*s.cell,s.oy+p.y*s.cell,s.ox+(p.x+1)*s.cell,s.oy+(p.y+1)*s.cell);grad.addColorStop(0,i===0?"#d6ff9a":"#76e39a");grad.addColorStop(1,i===0?"#78d85f":"#269b70");rounded(s.ox+p.x*s.cell+2,s.oy+p.y*s.cell+2,s.cell-6,s.cell-6,8,grad,i===0?"#eaffbd":"#a0f4bd");});
  const head=s.snake[0];ctx.fillStyle="#123b2a";ctx.beginPath();ctx.arc(s.ox+head.x*s.cell+12,s.oy+head.y*s.cell+12,2.5,0,7);ctx.arc(s.ox+head.x*s.cell+23,s.oy+head.y*s.cell+12,2.5,0,7);ctx.fill();
  text("EAT THE GLOWING DOTS",W/2,510,16,"#9bd9b7","center");
 }
@@ -476,8 +476,8 @@ function drawBreaker(dt){
  for(const brick of s.bricks){if(!brick.alive)continue;if(b.x+b.r>brick.x&&b.x-b.r<brick.x+brick.w&&b.y+b.r>brick.y&&b.y-b.r<brick.y+brick.h){brick.alive=false;b.vy*=-1;s.score+=10;s.bricksLeft--;break;}}
  if(b.y>H+20&&!s.over){s.lives--;if(s.lives<=0)finishGame("Out of balls! Final score: "+s.score,false);else{b.x=W/2;b.y=H-75;b.vx=210;b.vy=-260;setMessage("One more try! "+s.lives+" lives left.");}}
  s.bricks.forEach(br=>{if(br.alive)rounded(br.x,br.y,br.w,br.h,6,br.color,"#ffffff35");});
- rounded(p.x,p.y,p.w,p.h,8,"#6bdce9","#d1fbff");
- ctx.fillStyle="#ffe59b";ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();
+ ctx.save();ctx.shadowColor="#64e7f5";ctx.shadowBlur=18;rounded(p.x,p.y,p.w,p.h,8,"#6bdce9","#d1fbff");ctx.restore();
+ ctx.save();ctx.shadowColor="#ffe59b";ctx.shadowBlur=20;ctx.fillStyle="#ffe59b";ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.restore();
  if(s.bricksLeft===0)finishGame("Every brick smashed! Final score: "+s.score,true);
  text("BREAK EVERY BRICK",W/2,36,17,"#b9c6e8","center");
 }
@@ -494,7 +494,8 @@ function drawSpace(dt){
  s.rocks=s.rocks.filter(r=>{if(r.y>H+35){s.lives--;if(s.lives<=0)finishGame("The asteroid field won. Score: "+s.score,false);return false;}if(r.y>H-105&&Math.abs(r.x-s.playerX)<r.r+17){s.lives--;if(s.lives<=0)finishGame("Your ship was hit. Score: "+s.score,false);return false;}return true;});
  s.rocks.forEach(r=>{ctx.save();ctx.translate(r.x,r.y);ctx.rotate(r.rot);ctx.fillStyle="#9b8ca3";ctx.strokeStyle="#d2c0ce";ctx.lineWidth=3;ctx.beginPath();for(let i=0;i<8;i++){const a=i*Math.PI/4,rad=r.r*(i%2?.78:1);if(i===0)ctx.moveTo(Math.cos(a)*rad,Math.sin(a)*rad);else ctx.lineTo(Math.cos(a)*rad,Math.sin(a)*rad);}ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();});
  s.bullets.forEach(b=>{ctx.fillStyle="#ffe78d";ctx.fillRect(b.x-3,b.y-12,6,18);});
- ctx.fillStyle="#63ddf1";ctx.beginPath();ctx.moveTo(s.playerX,H-105);ctx.lineTo(s.playerX-27,H-57);ctx.lineTo(s.playerX,H-68);ctx.lineTo(s.playerX+27,H-57);ctx.closePath();ctx.fill();
+ ctx.save();ctx.shadowColor="#63ddf1";ctx.shadowBlur=22;ctx.fillStyle="#63ddf1";ctx.beginPath();ctx.moveTo(s.playerX,H-105);ctx.lineTo(s.playerX-27,H-57);ctx.lineTo(s.playerX,H-68);ctx.lineTo(s.playerX+27,H-57);ctx.closePath();ctx.fill();
+ ctx.fillStyle="#ffb85e";ctx.beginPath();ctx.moveTo(s.playerX-8,H-55);ctx.lineTo(s.playerX,H-35-Math.random()*10);ctx.lineTo(s.playerX+8,H-55);ctx.fill();ctx.restore();
  ctx.fillStyle="#d4faff";ctx.fillRect(s.playerX-6,H-82,12,18);
  text("SPACE DEFENDER",W/2,36,18,"#b9c8eb","center");
 }

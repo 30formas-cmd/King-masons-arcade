@@ -110,7 +110,7 @@ footer{border-top:1px solid #ffffff14;padding:20px 0 28px;text-align:center;font
           <button class="secondary-btn" id="randomBtn">🎲 Pick for me</button>
         </div>
         <div class="mini-stats">
-          <div class="mini-stat"><strong>8</strong><small>Games</small></div>
+          <div class="mini-stat"><strong>10</strong><small>Games</small></div>
           <div class="mini-stat"><strong>4</strong><small>Categories</small></div>
           <div class="mini-stat"><strong>0</strong><small>Downloads</small></div>
         </div>
@@ -133,6 +133,7 @@ footer{border-top:1px solid #ffffff14;padding:20px 0 28px;text-align:center;font
         <div class="filters" id="filters">
           <button class="filter-btn active" data-category="all">All games</button>
           <button class="filter-btn" data-category="action">Action</button>
+          <button class="filter-btn" data-category="driving">🚗 Driving</button>
           <button class="filter-btn" data-category="adventure">Adventure</button>
           <button class="filter-btn" data-category="puzzle">Puzzle</button>
           <button class="filter-btn" data-category="favorites">★ Favorites</button>
@@ -171,7 +172,9 @@ const W=960,H=540;
 const $=id=>document.getElementById(id);
 const canvas=$("stage"),ctx=canvas.getContext("2d");
 const catalog=[
- {id:"racer",name:"Neon Racer",icon:"🏎️",category:"action",tag:"FAST PACED",description:"Switch lanes, dodge traffic, and see how long you can stay on the road.",type:"2D racing",color:"#1b3b58"},
+ {id:"racer",name:"Neon Racer",icon:"🏎️",category:"driving",tag:"TRAFFIC RUSH",description:"Race down a glowing highway, dodge traffic, collect points, and beat your distance record.",type:"Highway driving",color:"#1b3b58"},
+ {id:"drift",name:"Drift Circuit",icon:"🏁",category:"driving",tag:"NEW · DRIVING",description:"Steer around a winding race circuit, collect boost rings, and chase your best lap score.",type:"Circuit racer",color:"#284b56"},
+ {id:"parking",name:"Parking Pro",icon:"🅿️",category:"driving",tag:"NEW · DRIVING",description:"Drive carefully through a parking lot and line your car up inside the glowing parking bay.",type:"Driving challenge",color:"#43516b"},
  {id:"snake",name:"Snake Attack",icon:"🐍",category:"action",tag:"CLASSIC",description:"Eat the glowing dots, grow longer, and try not to run into yourself.",type:"Arcade classic",color:"#174837"},
  {id:"breaker",name:"Brick Breaker",icon:"🧱",category:"action",tag:"SKILL",description:"Bounce the ball, smash every brick, and keep it from falling.",type:"2D arcade",color:"#52334b"},
  {id:"space",name:"Space Defender",icon:"🚀",category:"action",tag:"HIGH SCORE",description:"Protect your ship, blast incoming asteroids, and survive the waves.",type:"2D shooter",color:"#23365c"},
@@ -260,6 +263,15 @@ function setupGame(){
   state.lane=1;state.obstacles=[];state.spawn=.6;state.speed=240;state.lives=3;
   makeControls([{label:"◀ LEFT",action:"left",mode:"action"},{label:"RIGHT ▶",action:"right",mode:"action"}],"Tap left or right, or use the ← → keys.");
  }
+ if(g==="drift"){
+  state.x=W/2;state.speed=0;state.score=0;state.boosts=3;state.rocks=[];state.spawn=.7;state.roadOffset=0;state.lives=3;
+  makeControls([{label:"◀ STEER",action:"left"},{label:"ACCELERATE ▲",action:"accelerate"},{label:"BRAKE ▼",action:"brake"},{label:"STEER ▶",action:"right"},{label:"BOOST ⚡",action:"boost",mode:"action"}],"Steer, accelerate and brake. Use a boost to blast past traffic.");
+ }
+ if(g==="parking"){
+  state.x=160;state.y=420;state.angle=-Math.PI/2;state.speed=0;state.parked=false;state.bump=0;
+  state.blocks=[{x:270,y:90,w:25,h:250},{x:520,y:200,w:25,h:250},{x:650,y:90,w:25,h:210},{x:760,y:350,w:130,h:25}];
+  makeControls([{label:"◀ TURN",action:"left"},{label:"GAS ▲",action:"accelerate"},{label:"BRAKE ▼",action:"brake"},{label:"TURN ▶",action:"right"}],"Drive slowly around the barriers and park inside the glowing bay at the top right.");
+ }
  if(g==="snake"){
   state.cols=24;state.rows=13;state.cell=34;state.ox=72;state.oy=42;
   state.snake=[{x:8,y:6},{x:7,y:6},{x:6,y:6}];state.dir={x:1,y:0};state.nextDir={x:1,y:0};state.food=placeFood();state.tick=0;state.score=0;
@@ -320,7 +332,8 @@ function makeMaze(size){
 }
 function recordScore(){
  let value=Math.floor(state.score||0);
- if(currentGame==="snake"||currentGame==="breaker"||currentGame==="space")value=Math.floor(state.score||0);
+ if(currentGame==="snake"||currentGame==="breaker"||currentGame==="space"||currentGame==="racer"||currentGame==="drift")value=Math.floor(state.score||0);
+ if(currentGame==="parking")value=state.parked?1000:0;
  if(currentGame==="memory")value=state.matches*10;
  if(currentGame==="maze")value=Math.max(1,1000-Math.floor(state.elapsed*10));
  if(currentGame==="survival")value=state.wood+state.food;
@@ -333,7 +346,9 @@ function finishGame(message,won){
 }
 function updateHud(){
  const s=state;let list=[];
- if(currentGame==="racer")list=["<strong>Score:</strong> "+Math.floor(s.score),"Lives: "+s.lives];
+ if(currentGame==="racer")list=["<strong>Score:</strong> "+Math.floor(s.score),"Lives: "+s.lives,"Speed: "+Math.floor(s.speed/4)+" km/h"];
+ if(currentGame==="drift")list=["<strong>Score:</strong> "+Math.floor(s.score),"Boosts: "+s.boosts,"Speed: "+Math.floor(s.speed)+" km/h"];
+ if(currentGame==="parking")list=["<strong>Time:</strong> "+Math.max(0,Math.ceil(60-s.elapsed))+"s","Steering: "+(s.parked?"Parked":"In progress")];
  if(currentGame==="snake")list=["<strong>Score:</strong> "+s.score,"Length: "+s.snake.length];
  if(currentGame==="breaker")list=["<strong>Score:</strong> "+s.score,"Lives: "+s.lives,"Bricks: "+s.bricksLeft];
  if(currentGame==="space")list=["<strong>Score:</strong> "+s.score,"Lives: "+s.lives];
@@ -349,6 +364,8 @@ function loop(ts){
  ctx.clearRect(0,0,W,H);
  switch(currentGame){
   case"racer":drawRacer(dt);break;
+  case"drift":drawDrift(dt);break;
+  case"parking":drawParking(dt);break;
   case"snake":drawSnake(dt);break;
   case"breaker":drawBreaker(dt);break;
   case"space":drawSpace(dt);break;
@@ -397,6 +414,39 @@ function changeSnakeDir(d){
  const v={up:{x:0,y:-1},down:{x:0,y:1},left:{x:-1,y:0},right:{x:1,y:0}}[d];if(!v)return;
  if(v.x===-state.dir.x&&v.y===-state.dir.y)return;
  state.nextDir=v;
+}
+function drawDrift(dt){
+ const s=state;ctx.fillStyle="#153b31";ctx.fillRect(0,0,W,H);
+ for(let i=0;i<18;i++){ctx.fillStyle="#236047";ctx.beginPath();ctx.arc((i*173+40)%W,(i*97+30)%H,24,0,7);ctx.fill();}
+ ctx.fillStyle="#333b48";ctx.beginPath();ctx.moveTo(250,0);ctx.lineTo(710,0);ctx.lineTo(870,H);ctx.lineTo(90,H);ctx.closePath();ctx.fill();
+ ctx.strokeStyle="#f5e6a5";ctx.lineWidth=7;ctx.setLineDash([34,25]);ctx.beginPath();ctx.moveTo(480,0);ctx.lineTo(480,H);ctx.stroke();ctx.setLineDash([]);
+ ctx.strokeStyle="#e9e5d5";ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(275,0);ctx.lineTo(120,H);ctx.moveTo(685,0);ctx.lineTo(840,H);ctx.stroke();
+ s.speed=Math.max(0,Math.min(430,s.speed+(keys.accelerate?220:keys.brake?-330:-55)*dt));
+ if(keys.left)s.x-=300*dt*(.45+s.speed/430);if(keys.right)s.x+=300*dt*(.45+s.speed/430);s.x=Math.max(120,Math.min(840,s.x));
+ s.roadOffset=(s.roadOffset+s.speed*dt)%90;s.spawn-=dt;
+ if(s.spawn<=0){s.rocks.push({x:300+Math.random()*360,y:-60});s.spawn=.85+Math.random()*.45;}
+ s.rocks.forEach(o=>o.y+=(100+s.speed*.75)*dt);
+ s.rocks=s.rocks.filter(o=>{if(o.y>H+40){s.score+=15;return false;}if(Math.abs(o.x-s.x)<45&&Math.abs(o.y-(H-105))<55){s.speed*=.35;setMessage("Bump! Watch your racing line.");return false;}return true;});
+ s.rocks.forEach(o=>{rounded(o.x-24,o.y-34,48,68,11,"#e45c52","#ffc18c");rounded(o.x-16,o.y-25,32,19,5,"#b7e9f0");});
+ rounded(s.x-25,H-145,50,82,13,"#36c9e4","#d4fbff");rounded(s.x-17,H-132,34,24,6,"#a8f1f6");
+ ctx.fillStyle="#101927";ctx.fillRect(s.x-22,H-80,12,13);ctx.fillRect(s.x+10,H-80,12,13);
+ if(s.speed>0)s.score+=s.speed*dt*.025;
+ text("DRIFT CIRCUIT",W/2,38,19,"#fff1bd","center");
+}
+function drawParking(dt){
+ const s=state;ctx.fillStyle="#293747";ctx.fillRect(0,0,W,H);
+ for(let x=0;x<W;x+=60)for(let y=0;y<H;y+=60){ctx.strokeStyle="#ffffff0b";ctx.strokeRect(x,y,60,60);}
+ ctx.fillStyle="#344d43";ctx.fillRect(735,60,190,145);ctx.strokeStyle="#8ce6b0";ctx.lineWidth=5;ctx.setLineDash([12,8]);ctx.strokeRect(770,82,115,88);ctx.setLineDash([]);text("PARK HERE",827,72,14,"#aaf3c5","center");
+ s.blocks.forEach(b=>{rounded(b.x,b.y,b.w,b.h,6,"#a5afbd","#e5edf8");});
+ if(!s.parked){const accel=keys.accelerate?175:keys.brake?-210:0;s.speed=Math.max(-85,Math.min(150,s.speed+accel*dt));s.speed*=Math.pow(.985,dt*60);
+ if(keys.left)s.angle-=dt*1.9*(.35+Math.abs(s.speed)/100);if(keys.right)s.angle+=dt*1.9*(.35+Math.abs(s.speed)/100);
+ const nx=s.x+Math.cos(s.angle)*s.speed*dt,ny=s.y+Math.sin(s.angle)*s.speed*dt;
+ if(nx>35&&nx<W-35&&ny>35&&ny<H-35&&!s.blocks.some(b=>nx>b.x-25&&nx<b.x+b.w+25&&ny>b.y-25&&ny<b.y+b.h+25)){s.x=nx;s.y=ny;}else if(Math.abs(s.speed)>35){s.speed=0;s.bump++;setMessage("Easy! You bumped a barrier.");}
+ if(s.x>770&&s.x<885&&s.y>82&&s.y<170&&Math.abs(s.speed)<22){s.parked=true;finishGame("Perfect parking! You made it into the bay.",true);}
+ if(s.elapsed>60)finishGame("Time is up! Try a slower approach to the parking bay.",false);
+ }
+ ctx.save();ctx.translate(s.x,s.y);ctx.rotate(s.angle+Math.PI/2);rounded(-20,-35,40,70,10,"#45cce4","#d7fbff");rounded(-14,-23,28,22,5,"#c7f4f6");ctx.fillStyle="#17283c";ctx.fillRect(-17,20,9,12);ctx.fillRect(8,20,9,12);ctx.restore();
+ text("PARKING PRO",W/2,32,18,"#f5f7ff","center");
 }
 function drawSnake(dt){
  const s=state;s.tick+=dt;
@@ -488,6 +538,9 @@ function drawSurvival(dt){
 function handleAction(action){
  if(!currentGame||state.over)return;
  if(currentGame==="racer"&&(action==="left"||action==="right"))state.lane=Math.max(0,Math.min(2,state.lane+(action==="left"?-1:1)));
+ if(currentGame==="drift"&&action==="boost"&&state.boosts>0){state.boosts--;state.speed=Math.min(520,state.speed+180);setMessage("BOOST! Hold the racing line!");}
+ if(currentGame==="parking"&&action==="left")state.angle-=.18;
+ if(currentGame==="parking"&&action==="right")state.angle+=.18;
  if(currentGame==="snake")changeSnakeDir(action);
  if(currentGame==="space"&&action==="fire")keys.fire=true;
  if(currentGame==="jumper"&&action==="jump"&&state.grounded){state.vy=-520;state.grounded=false;}
@@ -569,6 +622,12 @@ function keyAction(e,down){
  };
  const action=map[k];
  if(currentGame==="maze"){if(k==="arrowup"||k==="w")keys.forward=down;if(k==="arrowdown"||k==="s")keys.back=down;if(k==="arrowleft"||k==="a")keys.turnL=down;if(k==="arrowright"||k==="d")keys.turnR=down;}
+ else if(currentGame==="drift"||currentGame==="parking"){
+  if(action==="left"||action==="right")keys[action]=down;
+  if(k==="arrowup"||k==="w")keys.accelerate=down;
+  if(k==="arrowdown"||k==="s")keys.brake=down;
+  if(down&&!e.repeat&&k===" ")handleAction("boost");
+ }
  else if(currentGame==="survival"||currentGame==="jumper"||currentGame==="breaker"||currentGame==="space"){
   if(action==="left"||action==="right"||action==="up"||action==="down")keys[action]=down;
   if(down&&!e.repeat&&currentGame==="jumper"&&action==="jump")handleAction("jump");

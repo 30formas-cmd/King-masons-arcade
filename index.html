@@ -173,7 +173,7 @@ const W=960,H=540;
 const $=id=>document.getElementById(id);
 const canvas=$("stage"),ctx=canvas.getContext("2d");
 const catalog=[
- {id:"3d",name:"3D Street Racer",icon:"🏎️",category:"driving",tag:"FULL 3D",description:"Drive from a third-person camera through a 3D highway, dodge traffic, and build your speed.",type:"3D driving",color:"#254b62"},
+ {id:"3d",name:"3D Grand Prix",icon:"🏁",category:"driving",tag:"3-LAP RACE",description:"Race around a full 3D circuit against six rival driver bots. Finish three laps and beat the field.",type:"3D circuit racing",color:"#254b62"},
  {id:"racer",name:"Neon Racer",icon:"🏎️",category:"driving",tag:"TRAFFIC RUSH",description:"Race down a glowing highway, dodge traffic, collect points, and beat your distance record.",type:"Highway driving",color:"#1b3b58"},
  {id:"drift",name:"Drift Circuit",icon:"🏁",category:"driving",tag:"NEW · DRIVING",description:"Steer around a winding race circuit, dodge traffic, use boosts, and chase your best score.",type:"Circuit racer",color:"#284b56"},
  {id:"parking",name:"Parking Pro",icon:"🅿️",category:"driving",tag:"NEW · DRIVING",description:"Drive carefully through a parking lot and line your car up inside the glowing parking bay.",type:"Driving challenge",color:"#43516b"},
@@ -262,8 +262,9 @@ function setupGame(){
  const g=currentGame;
  state={over:false,elapsed:0,score:0};
  if(g==="3d"){
-  state.x=0;state.speed=0;state.lives=3;state.spawn=.8;state.traffic=[];state.distance=0;state.hitCooldown=0;
-  makeControls([{label:"◀ LEFT",action:"left"},{label:"GAS ▲",action:"accelerate"},{label:"BRAKE ▼",action:"brake"},{label:"RIGHT ▶",action:"right"}],"Drive with the on-screen buttons or WASD / arrow keys. Avoid the other cars.");
+  state.x=0;state.speed=95;state.lives=3;state.spawn=.8;state.traffic=[];state.distance=0;state.hitCooldown=0;
+  state.laps=0;
+  makeControls([{label:"◀ STEER",action:"left"},{label:"GAS ▲",action:"accelerate"},{label:"BRAKE ▼",action:"brake"},{label:"STEER ▶",action:"right"}],"Race 3 laps against six bot drivers. Steer around the oval, accelerate, and brake.");
   init3D();
  }
  if(g==="racer"){
@@ -353,7 +354,7 @@ function finishGame(message,won){
 }
 function updateHud(){
  const s=state;let list=[];
- if(currentGame==="3d")list=["<strong>Score:</strong> "+Math.floor(s.score),"Speed: "+Math.floor(s.speed)+" km/h","Lives: "+s.lives,"Distance: "+Math.floor(s.distance)+" m"];
+ if(currentGame==="3d")list=["<strong>Score:</strong> "+Math.floor(s.score),"Speed: "+Math.floor(s.speed)+" km/h","Lap: "+Math.min(3,threeWorld?threeWorld.lap+1:1)+"/3","Rivals: 6"];
  if(currentGame==="racer")list=["<strong>Score:</strong> "+Math.floor(s.score),"Lives: "+s.lives,"Coins: "+s.coins,"Shield: "+(s.shield>0?"ON":"OFF")];
  if(currentGame==="drift")list=["<strong>Score:</strong> "+Math.floor(s.score),"Boosts: "+s.boosts,"Lives: "+s.lives,"Speed: "+Math.floor(s.speed)+" km/h"];
  if(currentGame==="parking")list=["<strong>Bumps:</strong> "+s.bump,"Speed: "+Math.floor(Math.abs(s.speed)),"Goal: park straight and stop"];
@@ -409,66 +410,105 @@ function dispose3D(){
  threeRenderer=null;threeScene=null;threeCamera=null;threeWorld=null;
  canvas.style.display="block";
 }
+
 function init3D(){
- if(!window.THREE){setMessage("The 3D engine could not load on this network. Try opening the game on a network that allows jsdelivr.net.");return;}
+ if(!window.THREE){setMessage("The 3D library is blocked on this network. Try another connection.");return;}
  canvas.style.display="none";
- const host=canvas.parentElement;
+ const host=canvas.parentElement,viewH=Math.min(window.innerHeight*.62,560);
  threeRenderer=new THREE.WebGLRenderer({antialias:true,alpha:false});
- threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.7));
- threeRenderer.setSize(host.clientWidth,Math.min(window.innerHeight*.58,520));
- threeRenderer.shadowMap.enabled=true;
- threeRenderer.shadowMap.type=THREE.PCFSoftShadowMap;
- threeRenderer.outputColorSpace=THREE.SRGBColorSpace;
- threeRenderer.domElement.style.cssText="display:block;width:100%;height:min(58vh,520px);min-height:280px;border-radius:11px;touch-action:none";
+ threeRenderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));threeRenderer.setSize(host.clientWidth,viewH);
+ threeRenderer.shadowMap.enabled=true;threeRenderer.shadowMap.type=THREE.PCFSoftShadowMap;threeRenderer.outputColorSpace=THREE.SRGBColorSpace;
+ threeRenderer.domElement.style.cssText="display:block;width:100%;height:min(62vh,560px);min-height:300px;border-radius:12px;touch-action:none";
  host.appendChild(threeRenderer.domElement);
- threeScene=new THREE.Scene();threeScene.background=new THREE.Color(0x9bc5e2);threeScene.fog=new THREE.Fog(0x9bc5e2,38,190);
- threeCamera=new THREE.PerspectiveCamera(65,host.clientWidth/Math.min(window.innerHeight*.58,520),.1,260);
- threeCamera.position.set(0,5.5,11.5);threeCamera.lookAt(0,1,-8);
- const hemi=new THREE.HemisphereLight(0xe5f4ff,0x526343,2.1);threeScene.add(hemi);
- const sun=new THREE.DirectionalLight(0xffedcf,2.5);sun.position.set(-8,16,7);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);threeScene.add(sun);
- const mat=(color,rough=.8)=>new THREE.MeshStandardMaterial({color,roughness:rough});
- const grass=mat(0x477b49),road=mat(0x30363d),line=mat(0xf4edcf),dark=mat(0x17232e),glass=mat(0x8cc6db,.28);
- const ground=new THREE.Mesh(new THREE.PlaneGeometry(240,260),grass);ground.rotation.x=-Math.PI/2;ground.position.set(0,-.13,-75);ground.receiveShadow=true;threeScene.add(ground);
- const roadMesh=new THREE.Mesh(new THREE.PlaneGeometry(13,250),road);roadMesh.rotation.x=-Math.PI/2;roadMesh.position.set(0,0,-75);roadMesh.receiveShadow=true;threeScene.add(roadMesh);
- for(let x of [-6.35,6.35]){const edge=new THREE.Mesh(new THREE.BoxGeometry(.16,.035,250),line);edge.position.set(x,.025,-75);threeScene.add(edge);}
- threeWorld={laneMarks:[],trees:[],traffic:[],player:null,mat,glass,dark};
- for(let z=-190;z<20;z+=12){for(let x of [-2.15,2.15]){const dash=new THREE.Mesh(new THREE.BoxGeometry(.13,.035,5),line);dash.position.set(x,.035,z);threeScene.add(dash);threeWorld.laneMarks.push(dash);}}
- for(let z=-185;z<18;z+=13){for(let side of [-1,1]){
-  const x=side*(9+Math.random()*7),trunk=new THREE.Mesh(new THREE.CylinderGeometry(.18,.28,2,7),mat(0x60442e));trunk.position.set(x,1,z);trunk.castShadow=true;threeScene.add(trunk);
-  const crown=new THREE.Mesh(new THREE.ConeGeometry(1.55,4,7),mat(Math.random()>.5?0x28613b:0x347348));crown.position.set(x,3.5,z);crown.castShadow=true;threeScene.add(crown);threeWorld.trees.push({trunk,crown});
- }}
- function car(color){
-  const group=new THREE.Group(),body=new THREE.Mesh(new THREE.BoxGeometry(1.65,.55,3),mat(color,.35));body.position.y=.72;body.castShadow=true;group.add(body);
-  const hood=new THREE.Mesh(new THREE.BoxGeometry(1.52,.22,.9),mat(color,.35));hood.position.set(0,1.02,-.88);group.add(hood);
-  const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.22,.65,1.35),glass);cabin.position.set(0,1.25,.18);cabin.castShadow=true;group.add(cabin);
-  for(let x of [-.88,.88])for(let z of [-.95,1]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.34,.34,.22,12),dark);wheel.rotation.z=Math.PI/2;wheel.position.set(x,.42,z);group.add(wheel);}
-  const lamp=mat(0xffedb0,.25);for(let x of [-.55,.55]){const l=new THREE.Mesh(new THREE.BoxGeometry(.28,.13,.06),lamp);l.position.set(x,.78,-1.53);group.add(l);}
-  group.userData.body=body;return group;
+ threeScene=new THREE.Scene();threeScene.background=new THREE.Color(0x91b8d2);threeScene.fog=new THREE.Fog(0x91b8d2,85,210);
+ threeCamera=new THREE.PerspectiveCamera(65,host.clientWidth/viewH,.1,350);
+ const hemi=new THREE.HemisphereLight(0xe7f4ff,0x4a6040,2.1);threeScene.add(hemi);
+ const sun=new THREE.DirectionalLight(0xffedc8,2.6);sun.position.set(-35,65,20);sun.castShadow=true;sun.shadow.mapSize.set(1024,1024);threeScene.add(sun);
+ const mat=(color,rough=.82,metal=0)=>new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});
+ const grass=mat(0x397849),asphalt=mat(0x30343a),white=mat(0xf5f0df),red=mat(0xc43b35),dark=mat(0x111820),glass=mat(0x8bc2d6,.25,.12);
+ const ground=new THREE.Mesh(new THREE.PlaneGeometry(280,280),grass);ground.rotation.x=-Math.PI/2;ground.position.y=-.22;ground.receiveShadow=true;threeScene.add(ground);
+ // Build a continuous oval circuit with a real infield cut-out.
+ const shape=new THREE.Shape();shape.absellipse(0,0,54,36,0,Math.PI*2,false,0);
+ const hole=new THREE.Path();hole.absellipse(0,0,39,21,0,Math.PI*2,true,0);shape.holes.push(hole);
+ const trackGeo=new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false,curveSegments:100});
+ trackGeo.rotateX(-Math.PI/2);trackGeo.translate(0,.02,0);
+ const track=new THREE.Mesh(trackGeo,asphalt);track.receiveShadow=true;track.castShadow=true;threeScene.add(track);
+ const world={traffic:[],player:null,mat,glass,trackRadiusX:46.5,trackRadiusZ:28.5,angle:-Math.PI/2,lane:0,lap:0,lastAngle:-Math.PI/2,finished:false,botSpeeds:[],raceTime:0};
+ threeWorld=world;
+ // Painted inner/outer kerbs, lane dashes and safety barriers.
+ function ringStrip(rx,rz,tube,color,y=.17){
+  const pts=[];for(let i=0;i<=240;i++){const a=i/240*Math.PI*2;pts.push(new THREE.Vector3(rx*Math.cos(a),y,rz*Math.sin(a)));}
+  const curve=new THREE.CatmullRomCurve3(pts);const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,480,tube,5,false),color);threeScene.add(mesh);return mesh;
  }
- threeWorld.player=car(0x167eb4);threeWorld.player.position.set(0,0,5);threeScene.add(threeWorld.player);
- const colors=[0xc94e43,0xe0b64c,0x5e7fae,0xeeeeea];
- for(let i=0;i<5;i++){const v=car(colors[i%colors.length]);v.position.set([-4.2,0,4.2][i%3],0,-35-i*32);threeScene.add(v);threeWorld.traffic.push(v);}
- window.addEventListener("resize",resize3D,{passive:true});
+ ringStrip(54,36,.72,red);ringStrip(39,21,.62,white);ringStrip(46.5,28.5,.09,white,.2);
+ for(let i=0;i<160;i++){const a=i/160*Math.PI*2;for(const [rx,rz] of [[46.5,28.5]]){const dash=new THREE.Mesh(new THREE.BoxGeometry(.12,.035,2.1),white);dash.position.set(rx*Math.cos(a),.19,rz*Math.sin(a));dash.rotation.y=-a;threeScene.add(dash);}}
+ // Start/finish stripe across the track.
+ for(let i=0;i<12;i++){const tile=new THREE.Mesh(new THREE.BoxGeometry(1.25,.045,1.1),i%2?dark:white);tile.position.set((i-5.5)*1.25,.22,-28.5);threeScene.add(tile);}
+ function makeCar(color){
+  const group=new THREE.Group(),paint=mat(color,.3,.28);
+  const body=new THREE.Mesh(new THREE.BoxGeometry(1.85,.62,3.5),paint);body.position.y=.78;body.castShadow=true;group.add(body);
+  const nose=new THREE.Mesh(new THREE.BoxGeometry(1.65,.2,1.05),paint);nose.position.set(0,1.08,-1.22);group.add(nose);
+  const cabin=new THREE.Mesh(new THREE.BoxGeometry(1.36,.72,1.65),glass);cabin.position.set(0,1.23,.05);cabin.castShadow=true;group.add(cabin);
+  const spoiler=new THREE.Mesh(new THREE.BoxGeometry(2.05,.12,.3),dark);spoiler.position.set(0,1.17,1.55);group.add(spoiler);
+  const tireMat=mat(0x101216,.95);
+  for(const x of [-.98,.98])for(const z of [-1.12,1.15]){const wheel=new THREE.Mesh(new THREE.CylinderGeometry(.38,.38,.24,14),tireMat);wheel.rotation.z=Math.PI/2;wheel.position.set(x,.42,z);wheel.castShadow=true;group.add(wheel);}
+  const lamp=mat(0xffedb0,.3),tail=mat(0xff342d,.3);
+  for(const x of [-.62,.62]){const f=new THREE.Mesh(new THREE.BoxGeometry(.34,.13,.07),lamp);f.position.set(x,.82,-1.78);group.add(f);const t=new THREE.Mesh(new THREE.BoxGeometry(.34,.13,.07),tail);t.position.set(x,.82,1.78);group.add(t);}
+  group.userData.paint=paint;return group;
+ }
+ world.player=makeCar(0x1688e0);threeScene.add(world.player);
+ const colors=[0xe43f37,0xffbd32,0xeeeeee,0x27a56c,0x8c63d9,0x222b39];
+ for(let i=0;i<6;i++){const car=makeCar(colors[i]);threeScene.add(car);world.traffic.push(car);world.botSpeeds.push(.24+(i%3)*.035);}
+ // Grandstands, floodlights and trees around the circuit.
+ for(let side of [-1,1])for(let i=0;i<10;i++){
+  const a=i/10*Math.PI*2,x=side*65*Math.cos(a),z=side*48*Math.sin(a);
+  const stand=new THREE.Mesh(new THREE.BoxGeometry(8,3.2,5),mat(0x526477));stand.position.set(x,1.5,z);stand.lookAt(0,0,0);threeScene.add(stand);
+  const roof=new THREE.Mesh(new THREE.BoxGeometry(8.5,.3,5.5),mat(0xd7dce0));roof.position.set(x,3.3,z);roof.lookAt(0,0,0);threeScene.add(roof);
+ }
+ // Place rival cars at different points around the lap.
+ world.traffic.forEach((car,i)=>{const a=world.angle+(i+1)*.48;placeRaceCar(car,a,0);});
+ placeRaceCar(world.player,world.angle,0);
+ threeCamera.position.set(0,7,15);threeCamera.lookAt(0,0,-8);
+}
+function placeRaceCar(car,a,lane){
+ const rx=46.5+lane,rz=28.5+lane*.55,x=rx*Math.cos(a),z=rz*Math.sin(a);
+ car.position.set(x,0,z);
+ const dx=-rx*Math.sin(a),dz=rz*Math.cos(a);
+ car.rotation.y=Math.atan2(-dx,-dz);
 }
 function resize3D(){
- if(!threeRenderer||!threeCamera)return;const host=canvas.parentElement,w=host.clientWidth,h=Math.min(window.innerHeight*.58,520);
- threeRenderer.setSize(w,h);threeCamera.aspect=w/h;threeCamera.updateProjectionMatrix();
+ if(!threeRenderer||!threeCamera)return;const host=canvas.parentElement,h=Math.min(window.innerHeight*.62,560);
+ threeRenderer.setSize(host.clientWidth,h);threeCamera.aspect=host.clientWidth/h;threeCamera.updateProjectionMatrix();
 }
 function draw3D(dt){
- if(!threeRenderer||!threeScene||!threeWorld){ctx.fillStyle="#17243c";ctx.fillRect(0,0,W,H);text("3D ENGINE NOT AVAILABLE",W/2,220,28,"#ffe19a","center");text("This network may be blocking the 3D library.",W/2,260,17,"#ffffff","center");text("Try again on a different connection.",W/2,292,15,"#a8b7d1","center");return;}
- const s=state,w=threeWorld,player=w.player;
- s.speed=Math.max(0,Math.min(235,s.speed+(keys.accelerate?105:keys.brake?-175:-32)*dt));
- const steer=(keys.right?1:0)-(keys.left?1:0);
- s.x=Math.max(-4.9,Math.min(4.9,s.x+steer*dt*(3.2+s.speed*.025)));
- player.position.x+=(s.x-player.position.x)*Math.min(1,dt*9);
- player.rotation.z=-steer*.09;player.rotation.y=-steer*.035;
- const flow=(8+s.speed*.38)*dt;s.distance+=s.speed*dt*.22;s.score+=s.speed*dt*.045;
- w.laneMarks.forEach(m=>{m.position.z+=flow;if(m.position.z>16)m.position.z=-190;});
- w.trees.forEach(t=>{t.trunk.position.z+=flow;t.crown.position.z+=flow;if(t.trunk.position.z>18){const z=-190-Math.random()*12,x=Math.sign(t.trunk.position.x)*(9+Math.random()*7);t.trunk.position.set(x,1,z);t.crown.position.set(x,3.5,z);}});
- s.spawn-=dt;if(s.spawn<=0){const v=w.traffic.find(v=>v.position.z<-18);if(v){v.position.set([-4.2,0,4.2][Math.floor(Math.random()*3)],0,-155-Math.random()*35);v.userData.body.material.color.setHex([0xc94e43,0xe0b64c,0x5e7fae,0xecece5][Math.floor(Math.random()*4)]);}s.spawn=Math.max(.75,1.7-s.speed/230);}
- w.traffic.forEach(v=>{v.position.z+=flow*.72;if(v.position.z>12)v.position.z=-170-Math.random()*30;if(v.position.z>1&&v.position.z<9&&Math.abs(v.position.x-player.position.x)<1.35&&s.hitCooldown<=0){s.lives--;s.hitCooldown=1.5;s.speed*=.35;setMessage("Crash! Watch the traffic.");if(s.lives<=0)finishGame("Race finished! Score: "+Math.floor(s.score),false);}});
- s.hitCooldown=Math.max(0,s.hitCooldown-dt);
- threeCamera.position.x+=(player.position.x*.45-threeCamera.position.x)*dt*2.8;threeCamera.position.y=5.4;threeCamera.position.z=11.5;threeCamera.lookAt(player.position.x*.45,1,-8);
+ if(!threeRenderer||!threeScene||!threeWorld){ctx.fillStyle="#17243c";ctx.fillRect(0,0,W,H);text("3D RACE UNAVAILABLE",W/2,220,26,"#ffe19a","center");text("The school network may be blocking the 3D library.",W/2,260,16,"#fff","center");return;}
+ const s=state,w=threeWorld;
+ if(!w.finished){
+  s.speed=Math.max(0,Math.min(225,s.speed+(keys.accelerate?92:keys.brake?-155:-28)*dt));
+  const steer=(keys.right?1:0)-(keys.left?1:0);
+  w.lane=Math.max(-4.3,Math.min(4.3,w.lane+steer*dt*(5.5+s.speed*.012)));
+  const radius=1/Math.max(25,(w.trackRadiusX+w.trackRadiusZ)*.5);
+  const old=w.angle,angular=(s.speed/3.6)/((w.trackRadiusX+w.trackRadiusZ)*.5)*dt;
+  w.angle+=angular;
+  if(w.angle>Math.PI*2-Math.PI/2&&old<Math.PI*2-Math.PI/2){w.lap++;if(w.lap>=3){w.finished=true;s.speed=0;finishGame("You finished the 3-lap race! Final score: "+Math.floor(s.score),true);}}
+  s.score+=s.speed*dt*.12;s.distance+=s.speed*dt*.28;
+  placeRaceCar(w.player,w.angle,w.lane);
+  w.traffic.forEach((car,i)=>{
+   const a=(w.angle+(i+1)*.52+s.elapsed*w.botSpeeds[i])%(Math.PI*2);
+   placeRaceCar(car,a,[-2.1,1.8,-.6,2.7,-2.8,.7][i]);
+   let diff=Math.atan2(Math.sin(a-w.angle),Math.cos(a-w.angle));
+   if(Math.abs(diff)<.055&&Math.abs(car.position.x-w.player.position.x)<2.1&&Math.abs(car.position.z-w.player.position.z)<2.5&&s.hitCooldown<=0){
+    s.lives--;s.hitCooldown=1.3;s.speed=Math.max(45,s.speed*.55);setMessage("Contact with a rival! Keep racing.");
+    if(s.lives<=0){w.finished=true;finishGame("Race over! You were knocked out. Score: "+Math.floor(s.score),false);}
+   }
+  });
+  s.hitCooldown=Math.max(0,s.hitCooldown-dt);
+ }
+ const p=w.player,rx=46.5+w.lane,rz=28.5+w.lane*.55;
+ const tangent=new THREE.Vector3(-rx*Math.sin(w.angle),0,rz*Math.cos(w.angle)).normalize();
+ const desired=new THREE.Vector3(p.position.x,0,p.position.z).addScaledVector(tangent,-13).add(new THREE.Vector3(0,7.2,0));
+ threeCamera.position.lerp(desired,Math.min(1,dt*4.5));
+ const look=new THREE.Vector3(p.position.x,1.1,p.position.z).addScaledVector(tangent,10);threeCamera.lookAt(look);
  threeRenderer.render(threeScene,threeCamera);
 }
 

@@ -406,6 +406,7 @@ function drawCar(x,y,w,h,color,angle=0){
 
 
 function dispose3D(){
+ window.removeEventListener("resize",resize3D);
  if(threeRenderer){threeRenderer.dispose();if(threeRenderer.domElement.parentNode)threeRenderer.domElement.parentNode.removeChild(threeRenderer.domElement);}
  threeRenderer=null;threeScene=null;threeCamera=null;threeWorld=null;
  canvas.style.display="block";
@@ -433,7 +434,7 @@ function init3D(){
  const trackGeo=new THREE.ExtrudeGeometry(shape,{depth:.18,bevelEnabled:false,curveSegments:100});
  trackGeo.rotateX(-Math.PI/2);trackGeo.translate(0,.02,0);
  const track=new THREE.Mesh(trackGeo,asphalt);track.receiveShadow=true;track.castShadow=true;threeScene.add(track);
- const world={traffic:[],player:null,mat,glass,trackRadiusX:46.5,trackRadiusZ:28.5,angle:-Math.PI/2,lane:0,lap:0,lastAngle:-Math.PI/2,finished:false,botSpeeds:[],raceTime:0};
+ const world={traffic:[],player:null,mat,glass,trackRadiusX:46.5,trackRadiusZ:28.5,angle:Math.PI*1.5,lane:0,lap:0,lastAngle:Math.PI*1.5,finished:false,botSpeeds:[],raceTime:0};
  threeWorld=world;
  // Painted inner/outer kerbs, lane dashes and safety barriers.
  function ringStrip(rx,rz,tube,color,y=.17){
@@ -466,7 +467,7 @@ function init3D(){
   const roof=new THREE.Mesh(new THREE.BoxGeometry(8.5,.3,5.5),mat(0xd7dce0));roof.position.set(x,3.3,z);roof.lookAt(0,0,0);threeScene.add(roof);
  }
  // Place rival cars at different points around the lap.
- world.traffic.forEach((car,i)=>{const a=world.angle+(i+1)*.48;placeRaceCar(car,a,0);});
+ world.traffic.forEach((car,i)=>{const a=(world.angle+(i+1)*.48)%(Math.PI*2);placeRaceCar(car,a,0);});
  placeRaceCar(world.player,world.angle,0);
  threeCamera.position.set(0,7,15);threeCamera.lookAt(0,0,-8);
 }
@@ -489,8 +490,8 @@ function draw3D(dt){
   w.lane=Math.max(-4.3,Math.min(4.3,w.lane+steer*dt*(5.5+s.speed*.012)));
   const radius=1/Math.max(25,(w.trackRadiusX+w.trackRadiusZ)*.5);
   const old=w.angle,angular=(s.speed/3.6)/((w.trackRadiusX+w.trackRadiusZ)*.5)*dt;
-  w.angle+=angular;
-  if(w.angle>Math.PI*2-Math.PI/2&&old<Math.PI*2-Math.PI/2){w.lap++;if(w.lap>=3){w.finished=true;s.speed=0;finishGame("You finished the 3-lap race! Final score: "+Math.floor(s.score),true);}}
+  w.angle=(w.angle+angular)%(Math.PI*2);
+  if(w.angle<old){w.lap++;if(w.lap>=3){w.finished=true;s.speed=0;finishGame("You finished the 3-lap race! Final score: "+Math.floor(s.score),true);}}
   s.score+=s.speed*dt*.12;s.distance+=s.speed*dt*.28;
   placeRaceCar(w.player,w.angle,w.lane);
   w.traffic.forEach((car,i)=>{

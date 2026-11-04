@@ -111,7 +111,7 @@ footer{border-top:1px solid #ffffff14;padding:20px 0 28px;text-align:center;font
           <button class="secondary-btn" id="randomBtn">🎲 Pick for me</button>
         </div>
         <div class="mini-stats">
-          <div class="mini-stat"><strong>10</strong><small>Games</small></div>
+          <div class="mini-stat"><strong>11</strong><small>Games</small></div>
           <div class="mini-stat"><strong>5</strong><small>Categories</small></div>
           <div class="mini-stat"><strong>0</strong><small>Downloads</small></div>
         </div>
@@ -455,7 +455,7 @@ function resize3D(){
  threeRenderer.setSize(w,h);threeCamera.aspect=w/h;threeCamera.updateProjectionMatrix();
 }
 function draw3D(dt){
- if(!threeRenderer||!threeScene||!threeWorld)return;
+ if(!threeRenderer||!threeScene||!threeWorld){ctx.fillStyle="#17243c";ctx.fillRect(0,0,W,H);text("3D ENGINE NOT AVAILABLE",W/2,220,28,"#ffe19a","center");text("This network may be blocking the 3D library.",W/2,260,17,"#ffffff","center");text("Try again on a different connection.",W/2,292,15,"#a8b7d1","center");return;}
  const s=state,w=threeWorld,player=w.player;
  s.speed=Math.max(0,Math.min(235,s.speed+(keys.accelerate?105:keys.brake?-175:-32)*dt));
  const steer=(keys.right?1:0)-(keys.left?1:0);

@@ -455,6 +455,7 @@ function drawParking(dt){
  for(let x=90;x<690;x+=125){ctx.strokeStyle="#aeb9c7";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,45);ctx.lineTo(x,155);ctx.stroke();ctx.beginPath();ctx.moveTo(x,385);ctx.lineTo(x,495);ctx.stroke();}
  // parked cars are visual obstacles
  [{x:125,y:72,c:"#cf665c"},{x:375,y:72,c:"#638ac4"},{x:590,y:405,c:"#d3a54e"},{x:280,y:405,c:"#7b75b8"}].forEach(v=>{rounded(v.x,v.y,68,38,8,v.c,"#e7edf6");rounded(v.x+12,v.y+6,44,16,5,"#bce3eb");});
+ s.blocks.forEach(b=>{rounded(b.x,b.y,b.w,b.h,5,"#d4a64e","#ffe3a1");for(let yy=b.y+7;yy<b.y+b.h-4;yy+=22){ctx.strokeStyle="#493b2b";ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(b.x+3,yy);ctx.lineTo(b.x+b.w-3,yy+12);ctx.stroke();}});
  ctx.fillStyle="#183c32";ctx.fillRect(760,65,160,170);ctx.strokeStyle="#8ce6b0";ctx.lineWidth=5;ctx.setLineDash([12,8]);ctx.strokeRect(785,95,110,105);ctx.setLineDash([]);text("PARK HERE",840,84,14,"#aaf3c5","center");
  s.speed=Math.max(-115,Math.min(165,s.speed+(keys.accelerate?205:keys.brake?-245:0)*dt));s.speed*=Math.pow(.988,dt*60);
  const steering=(keys.left?-1:0)+(keys.right?1:0);if(steering)s.angle+=steering*dt*(.65+Math.abs(s.speed)/100)*(s.speed<0?-1:1);

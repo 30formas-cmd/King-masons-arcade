@@ -178,7 +178,7 @@ const catalog=[
  {id:"drift",name:"Drift Circuit",icon:"🏁",category:"driving",tag:"NEW · DRIVING",description:"Steer around a winding race circuit, dodge traffic, use boosts, and chase your best score.",type:"Circuit racer",color:"#284b56"},
  {id:"parking",name:"Parking Pro",icon:"🅿️",category:"driving",tag:"NEW · DRIVING",description:"Drive carefully through a parking lot and line your car up inside the glowing parking bay.",type:"Driving challenge",color:"#43516b"},
  {id:"snake",name:"Snake Attack",icon:"🐍",category:"action",tag:"CLASSIC",description:"Eat the glowing dots, grow longer, and try not to run into yourself.",type:"Arcade classic",color:"#174837"},
- {id:"breaker",name:"Brick Breaker",icon:"🧱",category:"action",tag:"SKILL",description:"Bounce the ball, smash every brick, and keep it from falling.",type:"2D arcade",color:"#52334b"},
+ {id:"breaker",name:"Marshells Favorite Game",icon:"🪐",category:"action",tag:"MARS MISSION",description:"Smash glowing space bricks, catch power-ups, level up, and chase your high score across Mars.",type:"Space arcade",color:"#713f36"},
  {id:"space",name:"Space Defender",icon:"🚀",category:"action",tag:"HIGH SCORE",description:"Protect your ship, blast incoming asteroids, and survive the waves.",type:"2D shooter",color:"#23365c"},
  {id:"maze",name:"Castle Maze",icon:"🏰",category:"adventure",tag:"3D STYLE",description:"Explore a first-person castle maze and find the golden exit.",type:"3D-style adventure",color:"#4a3b5b"},
  {id:"survival",name:"Island Survival",icon:"🌴",category:"adventure",tag:"EXPLORE",description:"Collect wood and berries, manage your health, and complete your island mission.",type:"Top-down adventure",color:"#28533f"},
@@ -286,10 +286,9 @@ function setupGame(){
   makeControls([{label:"▲",action:"up",mode:"action"},{label:"◀",action:"left",mode:"action"},{label:"▼",action:"down",mode:"action"},{label:"▶",action:"right",mode:"action"}],"Tap a direction or use the arrow keys. Don't hit the walls or your tail.");
  }
  if(g==="breaker"){
-  state.paddle={x:W/2-65,y:H-48,w:130,h:14};state.ball={x:W/2,y:H-75,vx:230,vy:-260,r:9};state.bricks=[];state.lives=3;state.score=0;
-  for(let row=0;row<5;row++)for(let col=0;col<10;col++)state.bricks.push({x:68+col*84,y:72+row*38,w:74,h:25,alive:true,color:["#f1796c","#ffbb61","#f0dc74","#6bc9cf","#a68bee"][row]});
-  state.bricksLeft=state.bricks.length;
-  makeControls([{label:"◀ LEFT",action:"left"},{label:"RIGHT ▶",action:"right"}],"Move the paddle with the buttons or ← →. Keep the ball in play.");
+  state.paddle={x:W/2-72,y:H-48,w:144,h:16,baseW:144};state.ball={x:W/2,y:H-78,vx:235,vy:-285,r:10,trail:[]};state.bricks=[];state.lives=4;state.score=0;state.level=1;state.combo=0;state.powerups=[];state.particles=[];state.powerTimer=0;state.wideTimer=0;state.slowTimer=0;state.shake=0;
+  makeBreakerWave();
+  makeControls([{label:"◀ MOVE LEFT",action:"left"},{label:"MOVE RIGHT ▶",action:"right"}],"Move the paddle with the buttons, arrow keys, or drag anywhere across the game screen.");
  }
  if(g==="space"){
   state.playerX=W/2;state.bullets=[];state.rocks=[];state.cool=0;state.spawn=.5;state.lives=3;state.score=0;state.invuln=0;
@@ -359,7 +358,7 @@ function updateHud(){
  if(currentGame==="drift")list=["<strong>Score:</strong> "+Math.floor(s.score),"Boosts: "+s.boosts,"Lives: "+s.lives,"Speed: "+Math.floor(s.speed)+" km/h"];
  if(currentGame==="parking")list=["<strong>Bumps:</strong> "+s.bump,"Speed: "+Math.floor(Math.abs(s.speed)),"Goal: park straight and stop"];
  if(currentGame==="snake")list=["<strong>Score:</strong> "+s.score,"Length: "+s.snake.length];
- if(currentGame==="breaker")list=["<strong>Score:</strong> "+s.score,"Lives: "+s.lives,"Bricks: "+s.bricksLeft];
+ if(currentGame==="breaker")list=["<strong>Score:</strong> "+s.score,"Lives: "+s.lives,"Level: "+s.level+"/3","Combo: x"+Math.max(1,s.combo),"Bricks: "+s.bricksLeft];
  if(currentGame==="space")list=["<strong>Score:</strong> "+s.score,"Lives: "+s.lives];
  if(currentGame==="maze")list=["Time: "+Math.floor(s.elapsed)+"s","Steps: "+Math.floor(s.steps)];
  if(currentGame==="survival")list=["Health: "+Math.ceil(s.health)+"%","Wood: "+s.wood+"/8","Berries: "+s.food+"/4"];
@@ -577,22 +576,46 @@ function drawSnake(dt){
  const head=s.snake[0];ctx.fillStyle="#123b2a";ctx.beginPath();ctx.arc(s.ox+head.x*s.cell+12,s.oy+head.y*s.cell+12,2.5,0,7);ctx.arc(s.ox+head.x*s.cell+23,s.oy+head.y*s.cell+12,2.5,0,7);ctx.fill();
  text("EAT THE GLOWING DOTS",W/2,510,16,"#9bd9b7","center");
 }
-function drawBreaker(dt){
+function makeBreakerWave(){
+ const s=state;s.bricks=[];const colors=["#ff795e","#ffad55","#f4d35e","#63d7d0","#8b8cff"];
+ for(let row=0;row<5;row++)for(let col=0;col<10;col++){const tough=s.level>1&&((row+col+s.level)%4===0);s.bricks.push({x:68+col*84,y:82+row*39,w:74,h:26,alive:true,hp:tough?2:1,maxHp:tough?2:1,color:colors[row]});}
+ s.bricksLeft=s.bricks.length;
+ }
+ function breakerBurst(x,y,color,count=8){for(let i=0;i<count;i++){const a=Math.random()*Math.PI*2,v=45+Math.random()*180;state.particles.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:.45+Math.random()*.45,color});}}
+ function drawBreaker(dt){
  const s=state,p=s.paddle,b=s.ball;
- ctx.fillStyle="#15172c";ctx.fillRect(0,0,W,H);
- for(let i=0;i<12;i++){ctx.fillStyle=i%2?"#1a2040":"#1d2448";ctx.fillRect(i*80,0,1,H);}
- if(keys.left)p.x-=430*dt;if(keys.right)p.x+=430*dt;p.x=Math.max(20,Math.min(W-p.w-20,p.x));
- b.x+=b.vx*dt;b.y+=b.vy*dt;
- if(b.x<b.r||b.x>W-b.r)b.vx*=-1;if(b.y<b.r)b.vy=Math.abs(b.vy);
- if(b.vy>0&&b.y+b.r>=p.y&&b.y-b.r<=p.y+p.h&&b.x>=p.x&&b.x<=p.x+p.w){b.vy=-Math.abs(b.vy);b.vx=((b.x-(p.x+p.w/2))/(p.w/2))*330;}
- for(const brick of s.bricks){if(!brick.alive)continue;if(b.x+b.r>brick.x&&b.x-b.r<brick.x+brick.w&&b.y+b.r>brick.y&&b.y-b.r<brick.y+brick.h){brick.alive=false;b.vy*=-1;s.score+=10;s.bricksLeft--;break;}}
- if(b.y>H+20&&!s.over){s.lives--;if(s.lives<=0)finishGame("Out of balls! Final score: "+s.score,false);else{b.x=W/2;b.y=H-75;b.vx=210;b.vy=-260;setMessage("One more try! "+s.lives+" lives left.");}}
- s.bricks.forEach(br=>{if(br.alive)rounded(br.x,br.y,br.w,br.h,6,br.color,"#ffffff35");});
- ctx.save();ctx.shadowColor="#64e7f5";ctx.shadowBlur=18;rounded(p.x,p.y,p.w,p.h,8,"#6bdce9","#d1fbff");ctx.restore();
- ctx.save();ctx.shadowColor="#ffe59b";ctx.shadowBlur=20;ctx.fillStyle="#ffe59b";ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.restore();
- if(s.bricksLeft===0)finishGame("Every brick smashed! Final score: "+s.score,true);
- text("BREAK EVERY BRICK",W/2,36,17,"#b9c6e8","center");
-}
+ const bg=ctx.createLinearGradient(0,0,0,H);bg.addColorStop(0,"#241c35");bg.addColorStop(.58,"#432b3a");bg.addColorStop(1,"#171b2c");ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+ // Mars-like horizon, stars and distant craters
+ for(let i=0;i<90;i++){const x=(i*137)%W,y=(i*83)%330;ctx.fillStyle=i%4===0?"#ffe3b4":"#ffffff70";ctx.fillRect(x,y,2,2);}
+ ctx.fillStyle="#a64f45";ctx.beginPath();ctx.ellipse(480,560,650,210,0,Math.PI,Math.PI*2);ctx.fill();
+ ctx.strokeStyle="#e18a6d30";ctx.lineWidth=2;for(let x=35;x<W;x+=95){ctx.beginPath();ctx.arc(x,500,35+(x%4)*8,Math.PI,Math.PI*2);ctx.stroke();}
+ if(keys.left)p.x-=520*dt;if(keys.right)p.x+=520*dt;p.x=Math.max(18,Math.min(W-p.w-18,p.x));
+ p.w=p.baseW+(s.wideTimer>0?70:0);p.x=Math.max(18,Math.min(W-p.w-18,p.x));
+ s.wideTimer=Math.max(0,s.wideTimer-dt);s.slowTimer=Math.max(0,s.slowTimer-dt);s.shake=Math.max(0,s.shake-dt*22);
+ const speedFactor=s.slowTimer>0?.72:1;b.x+=b.vx*dt*speedFactor;b.y+=b.vy*dt*speedFactor;
+ if(b.x<b.r||b.x>W-b.r){b.x=Math.max(b.r,Math.min(W-b.r,b.x));b.vx=-b.vx;}
+ if(b.y<b.r+8){b.y=b.r+8;b.vy=Math.abs(b.vy);}
+ if(b.vy>0&&b.y+b.r>=p.y&&b.y-b.r<=p.y+p.h&&b.x>=p.x-2&&b.x<=p.x+p.w+2){
+  b.y=p.y-b.r;b.vy=-Math.max(245,Math.abs(b.vy));const hit=(b.x-(p.x+p.w/2))/(p.w/2);b.vx=Math.max(-430,Math.min(430,hit*390));s.combo=0;breakerBurst(b.x,p.y,"#b8faff",5);
+ }
+ const oldX=b.x-b.vx*dt*speedFactor,oldY=b.y-b.vy*dt*speedFactor;
+ for(const br of s.bricks){if(!br.alive)continue;if(b.x+b.r>br.x&&b.x-b.r<br.x+br.w&&b.y+b.r>br.y&&b.y-b.r<br.y+br.h){
+  br.hp--;s.combo++;s.score+=10*s.combo;breakerBurst(b.x,b.y,br.color,br.hp?4:10);
+  if(br.hp<=0){br.alive=false;s.bricksLeft--;if(Math.random()<.17)s.powerups.push({x:br.x+br.w/2,y:br.y+br.h/2,type:["wide","slow","life"][Math.floor(Math.random()*3)],vy:115});}
+  if(oldY+b.r<=br.y||oldY-b.r>=br.y+br.h)b.vy*=-1;else b.vx*=-1;s.shake=br.hp<=0?2.5:1;break;
+ }}
+ for(const q of s.powerups){q.y+=q.vy*dt;if(q.y>p.y-12&&q.y<p.y+p.h+12&&q.x>p.x-8&&q.x<p.x+p.w+8){q.caught=true;if(q.type==="wide"){s.wideTimer=12;setMessage("WIDE PADDLE!");}if(q.type==="slow"){s.slowTimer=8;setMessage("SLOW-MO BALL!");}if(q.type==="life"){s.lives=Math.min(6,s.lives+1);setMessage("+1 EXTRA LIFE!");}s.score+=25;breakerBurst(q.x,q.y,"#ffe18a",12);}}
+ s.powerups=s.powerups.filter(q=>!q.caught&&q.y<H+20);
+ if(b.y>H+18&&!s.over){s.lives--;s.combo=0;if(s.lives<=0)finishGame("Mission over! Final score: "+s.score,false);else{b.x=p.x+p.w/2;b.y=p.y-18;b.vx=(Math.random()-.5)*180;b.vy=-285;setMessage("Ball lost! "+s.lives+" lives left — keep going.");}}
+ for(const part of s.particles){part.x+=part.vx*dt;part.y+=part.vy*dt;part.vy+=110*dt;part.life-=dt;ctx.globalAlpha=Math.max(0,part.life);ctx.fillStyle=part.color;ctx.fillRect(part.x,part.y,4,4);}ctx.globalAlpha=1;s.particles=s.particles.filter(v=>v.life>0);
+ s.bricks.forEach(br=>{if(!br.alive)return;ctx.save();ctx.shadowColor=br.color;ctx.shadowBlur=br.hp>1?15:8;const grad=ctx.createLinearGradient(br.x,br.y,br.x,br.y+br.h);grad.addColorStop(0,br.color);grad.addColorStop(1,"#542d42");rounded(br.x,br.y,br.w,br.h,7,grad,"#ffffff80");if(br.hp>1){text("◆",br.x+br.w/2,br.y+19,14,"#fff4d6","center");}ctx.restore();});
+ s.powerups.forEach(q=>{ctx.save();ctx.shadowColor="#ffe28a";ctx.shadowBlur=15;rounded(q.x-13,q.y-10,26,20,7,"#ffe18a","#fff6c9");text(q.type==="wide"?"W":q.type==="slow"?"S":"+ ",q.x,q.y+5,13,"#493024","center");ctx.restore();});
+ b.trail.push({x:b.x,y:b.y});if(b.trail.length>9)b.trail.shift();b.trail.forEach((t,i)=>{ctx.globalAlpha=(i/b.trail.length)*.32;ctx.fillStyle="#ffe6b0";ctx.beginPath();ctx.arc(t.x,t.y,b.r*(i/b.trail.length),0,Math.PI*2);ctx.fill();});ctx.globalAlpha=1;
+ ctx.save();ctx.shadowColor="#73e9f5";ctx.shadowBlur=22;const pg=ctx.createLinearGradient(p.x,p.y,p.x,p.y+p.h);pg.addColorStop(0,"#e4ffff");pg.addColorStop(.45,"#5ce0ed");pg.addColorStop(1,"#267a9c");rounded(p.x,p.y,p.w,p.h,9,pg,"#e6ffff");ctx.restore();
+ ctx.save();ctx.shadowColor="#ffe6a5";ctx.shadowBlur=25;const ballGrad=ctx.createRadialGradient(b.x-3,b.y-4,1,b.x,b.y,b.r+2);ballGrad.addColorStop(0,"#fff");ballGrad.addColorStop(.45,"#ffe7a8");ballGrad.addColorStop(1,"#ff9d5c");ctx.fillStyle=ballGrad;ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,Math.PI*2);ctx.fill();ctx.restore();
+ text("MARS BRICK BLAST",W/2,37,20,"#ffe5c4","center");text("POWER-UPS  •  3 LEVELS  •  BIG COMBOS",W/2,59,11,"#e8b9a7","center");
+ if(s.bricksLeft===0){if(s.level>=3)finishGame("Mars mission complete! Final score: "+s.score,true);else{s.level++;makeBreakerWave();b.x=p.x+p.w/2;b.y=p.y-20;b.vx=245+s.level*25;b.vy=-(285+s.level*25);s.combo=0;setMessage("LEVEL "+s.level+"! Tougher bricks incoming.");}}
+ }
 function drawSpace(dt){
  const s=state;ctx.fillStyle="#070d20";ctx.fillRect(0,0,W,H);
  for(let i=0;i<95;i++){const x=(i*139)%W,y=(i*83+s.elapsed*28)%H;ctx.fillStyle=i%5?"#7185aa":"#f8e7ae";ctx.fillRect(x,y,2,2);}
@@ -749,8 +772,9 @@ function keyAction(e,down){
 document.addEventListener("keydown",e=>keyAction(e,true));
 document.addEventListener("keyup",e=>keyAction(e,false));
 document.addEventListener("visibilitychange",()=>{if(document.hidden&&currentGame&&!paused&&!state.over){paused=true;$("pauseBtn").textContent="▶ Resume";cancelAnimationFrame(raf);setMessage("Paused while this tab is hidden. Press Resume to continue.");}});
+canvas.addEventListener("pointerdown",e=>{if(currentGame==="breaker"){try{canvas.setPointerCapture(e.pointerId);}catch(err){}const r=canvas.getBoundingClientRect();state.paddle.x=Math.max(18,Math.min(W-state.paddle.w-18,(e.clientX-r.left)*W/r.width-state.paddle.w/2));}});
 canvas.addEventListener("pointermove",e=>{
- if(currentGame==="breaker"&&e.buttons){const r=canvas.getBoundingClientRect();state.paddle.x=Math.max(20,Math.min(W-state.paddle.w-20,(e.clientX-r.left)*W/r.width-state.paddle.w/2));}
+ if(currentGame==="breaker"&&(e.buttons||e.pointerType==="touch")){const r=canvas.getBoundingClientRect();state.paddle.x=Math.max(18,Math.min(W-state.paddle.w-18,(e.clientX-r.left)*W/r.width-state.paddle.w/2));}
 });
 })();
 </script>

@@ -187,7 +187,8 @@ const catalog=[
   {id:"memory",name:"Memory Match",icon:"🧠",category:"puzzle",tag:"BRAIN GAME",description:"Flip the tiles, remember what you saw, and match all six pairs.",type:"Puzzle",color:"#59482c"},
   {id:"ragdoll",name:"Ragdoll Sandbox",icon:"🤪",category:"puzzle",tag:"RDR1 RIPOFF",description:"Run around and fight spiderman and attack NPCs in this crazy sandbox!",type:"Action",color:"#59482c"}
 ];
-let category="all",search="",favorites=new Set(),bestScores={},currentGame="",state={},keys={},raf=0,last=0,paused=false,hudTimer=0,threeRenderer=null,threeScene=null,threeCamera=null,threeWorld=null;
+
+  let category="all",search="",favorites=new Set(),bestScores={},currentGame="",state={},keys={},raf=0,last=0,paused=false,hudTimer=0,threeRenderer=null,threeScene=null,threeCamera=null,threeWorld=null;
 try{favorites=new Set(JSON.parse(localStorage.getItem("kma-favorites")||"[]"));bestScores=JSON.parse(localStorage.getItem("kma-best")||"{}");}catch(e){favorites=new Set();bestScores={};}
 function saveLocal(){
  try{localStorage.setItem("kma-favorites",JSON.stringify([...favorites]));localStorage.setItem("kma-best",JSON.stringify(bestScores));}catch(e){}

@@ -133,7 +133,7 @@ footer{padding-top:24px}
       <div>
         <div class="eyebrow">👑 Your personal game zone</div>
         <h1>Ready to beat<br>your <span>high score?</span></h1>
-        <p class="hero-copy">Jump into quick arcade challenges, explore a castle maze, race through neon streets, or test your brain. Pick a game and start playing.</p>
+        <p class="hero-copy">Jump into a 3D race, survive the Backrooms, dodge traffic in Crossy Road, or take on a quick arcade challenge. Pick a game and start playing.</p>
         <div class="hero-actions">
           <button class="primary-btn" id="browseBtn">🎮 Browse games</button>
           <button class="secondary-btn" id="randomBtn">🎲 Pick for me</button>
@@ -557,9 +557,9 @@ function drawRacer(dt){
  for(let i=0;i<13;i++){const t=((i*78+s.roadOffset)%1014)/1014,y=hz+t*(H-hz),left=topL*(1-t),right=topR+(W-topR)*t;for(let lane=1;lane<3;lane++){const x=left+(right-left)*lane/3;ctx.fillStyle="#e5e0cf";ctx.fillRect(x-2-t*2,y,4+t*4,9+t*25);}}
  for(let i=0;i<16;i++){const t=((i*92+s.roadOffset*1.5)%1000)/1000,y=hz+t*(H-hz),scale=.25+t,side=i%2?1:-1,x=480+side*(260+330*t);ctx.fillStyle="#473a2d";ctx.fillRect(x-2*scale,y-22*scale,4*scale,23*scale);ctx.fillStyle="#315d3c";ctx.beginPath();ctx.arc(x,y-25*scale,17*scale,0,7);ctx.fill();}
  if(keys.left||keys.right){s.moveRepeat=(s.moveRepeat||0)-dt;if(s.moveRepeat<=0){s.lane=Math.max(0,Math.min(2,s.lane+(keys.left?-1:1)));s.moveRepeat=.14;}}else s.moveRepeat=0;
- s.speed=Math.min(430,210+s.elapsed*5);s.spawn-=dt;if(s.spawn<=0){s.obstacles.push({lane:Math.floor(Math.random()*3),y:hz-10,type:Math.random()<.17?"coin":"car",color:["#ad4039","#477b9c","#c5a65d"][Math.floor(Math.random()*3)],passed:false});s.spawn=Math.max(.48,1.05-s.elapsed*.004)+Math.random()*.3;}
- for(const o of s.obstacles){o.y+=(s.speed+65)*dt;const t=Math.max(0,Math.min(1,(o.y-hz)/(H-hz))),left=topL*(1-t),right=topR+(W-topR)*t,x=left+(right-left)*(o.lane+.5)/3,scale=.25+t*.8;if(o.type==="coin"){ctx.fillStyle="#f7d16a";ctx.beginPath();ctx.ellipse(x,o.y,5+7*t,7+8*t,0,0,7);ctx.fill();}else drawCar(x,o.y,28+34*scale,40+55*scale,o.color);
- if(!o.passed&&o.y>H-110){o.passed=true;if(o.lane===s.lane){if(o.type==="coin"){s.score+=50;s.coins++;}else if(s.shield>0)s.shield--;else{s.lives--;if(s.lives<=0)finishGame("You crashed. Final score: "+Math.floor(s.score),false);else setMessage("Collision! "+s.lives+" lives left.");}}else if(o.type==="car")s.score+=12;}}
+ s.speed=Math.min(430,210+s.elapsed*5);s.spawn-=dt;if(s.spawn<=0){s.obstacles.push({lane:Math.floor(Math.random()*3),y:hz-10,type:Math.random()<.14?"coin":Math.random()<.12?"shield":"car",color:["#ad4039","#477b9c","#c5a65d"][Math.floor(Math.random()*3)],passed:false});s.spawn=Math.max(.48,1.05-s.elapsed*.004)+Math.random()*.3;}
+ for(const o of s.obstacles){o.y+=(s.speed+65)*dt;const t=Math.max(0,Math.min(1,(o.y-hz)/(H-hz))),left=topL*(1-t),right=topR+(W-topR)*t,x=left+(right-left)*(o.lane+.5)/3,scale=.25+t*.8;if(o.type==="coin"){ctx.save();ctx.shadowColor="#ffe27a";ctx.shadowBlur=15;ctx.fillStyle="#f7d16a";ctx.beginPath();ctx.ellipse(x,o.y,5+7*t,7+8*t,0,0,7);ctx.fill();ctx.restore();}else if(o.type==="shield"){ctx.save();ctx.strokeStyle="#75e9f2";ctx.lineWidth=4;ctx.shadowColor="#75e9f2";ctx.shadowBlur=16;ctx.beginPath();ctx.arc(x,o.y,10+9*t,0,Math.PI*2);ctx.stroke();ctx.restore();}else drawCar(x,o.y,28+34*scale,40+55*scale,o.color);
+ if(!o.passed&&o.y>H-110){o.passed=true;if(o.lane===s.lane){if(o.type==="coin"){s.score+=50;s.coins++;}else if(o.type==="shield"){s.shield=8;setMessage("Shield activated!");}else if(s.shield>0)s.shield--;else{s.lives--;if(s.lives<=0)finishGame("You crashed. Final score: "+Math.floor(s.score),false);else setMessage("Collision! "+s.lives+" lives left.");}}else if(o.type==="car")s.score+=12;}}
  s.obstacles=s.obstacles.filter(o=>o.y<H+80);if(s.shield>0)s.shield=Math.max(0,s.shield-dt);if(!s.over)s.score+=dt*3;
  const px=[330,480,630][s.lane];drawCar(px,H-96,72,116,"#b82f36");text("HIGHWAY DRIVE",W/2,35,18,"#fff","center");
 }
@@ -599,8 +599,9 @@ function drawSnake(dt){
  ctx.fillStyle="#0d1d1b";ctx.fillRect(0,0,W,H);
  rounded(48,25,864,490,18,"#102a24","#285b48");
  for(let x=0;x<s.cols;x++)for(let y=0;y<s.rows;y++){ctx.fillStyle=(x+y)%2?"#15372e":"#183d33";ctx.fillRect(s.ox+x*s.cell,s.oy+y*s.cell,s.cell-2,s.cell-2);}
- while(s.tick>.13&&!s.over){
-  s.tick-=.13;s.dir=s.nextDir;
+ const tickRate=Math.max(.065,.13-s.score*.0008);
+ while(s.tick>tickRate&&!s.over){
+  s.tick-=tickRate;s.dir=s.nextDir;
   const head={x:s.snake[0].x+s.dir.x,y:s.snake[0].y+s.dir.y};
   const ate=head.x===s.food.x&&head.y===s.food.y;
   if(head.x<0||head.y<0||head.x>=s.cols||head.y>=s.rows||s.snake.some((p,i)=>i<(ate?s.snake.length:s.snake.length-1)&&p.x===head.x&&p.y===head.y)){finishGame("Snake crash! Final score: "+s.score,false);break;}

@@ -353,10 +353,6 @@ function setupGame(){
   state.playerX=W/2;state.bullets=[];state.rocks=[];state.cool=0;state.spawn=.5;state.lives=3;state.score=0;state.invuln=0;
   makeControls([{label:"◀ LEFT",action:"left"},{label:"FIRE ✦",action:"fire",mode:"action"},{label:"RIGHT ▶",action:"right"}],"Move with ← → and tap FIRE (or hold Space).");
  }
- if(g==="maze"){
-  state.map=makeMaze(11);state.px=1.5;state.py=1.5;state.angle=0;state.steps=0;
-  makeControls([{label:"▲ FORWARD",action:"forward"},{label:"◀ TURN",action:"turnL"},{label:"BACK ▼",action:"back"},{label:"TURN ▶",action:"turnR"}],"Explore the castle. Use forward/back to walk and left/right to turn.");
- }
  if(g==="survival"){
   state.x=W/2;state.y=H/2;state.health=100;state.wood=0;state.food=0;state.resources=[];
   for(let i=0;i<19;i++)state.resources.push({x:55+Math.random()*(W-110),y:55+Math.random()*(H-110),type:i<12?"tree":"berry",gone:false});
@@ -379,29 +375,11 @@ function setupGame(){
 function placeFood(){
  let p;do{p={x:Math.floor(Math.random()*state.cols),y:Math.floor(Math.random()*state.rows)};}while(state.snake.some(s=>s.x===p.x&&s.y===p.y));return p;
 }
-function makeMaze(size){
- const m=Array.from({length:size},()=>Array(size).fill(1));
- const stack=[[1,1]];m[1][1]=0;
- while(stack.length){
-  const cur=stack[stack.length-1],dirs=[[0,-2],[2,0],[0,2],[-2,0]].sort(()=>Math.random()-.5);
-  let moved=false;
-  for(const d of dirs){
-   const nx=cur[0]+d[0],ny=cur[1]+d[1];
-   if(nx>0&&ny>0&&nx<size-1&&ny<size-1&&m[ny][nx]===1){
-    m[cur[1]+d[1]/2][cur[0]+d[0]/2]=0;m[ny][nx]=0;stack.push([nx,ny]);moved=true;break;
-   }
-  }
-  if(!moved)stack.pop();
- }
- m[size-2][size-2]=0;
- return m;
-}
 function recordScore(){
  let value=Math.floor(state.score||0);
  if(currentGame==="snake"||currentGame==="breaker"||currentGame==="space"||currentGame==="racer"||currentGame==="drift")value=Math.floor(state.score||0);
  if(currentGame==="parking")value=state.parked?1000:0;
  if(currentGame==="memory")value=state.matches*10;
- if(currentGame==="maze")value=Math.max(1,1000-Math.floor(state.elapsed*10));
  if(currentGame==="survival")value=state.wood+state.food;
  if(currentGame==="jumper")value=state.coins;
  const old=bestScores[currentGame]||0;
@@ -419,7 +397,6 @@ function updateHud(){
  if(currentGame==="snake")list=["<strong>Score:</strong> "+s.score,"Length: "+s.snake.length];
  if(currentGame==="breaker")list=["<strong>Score:</strong> "+s.score,"Lives: "+s.lives,"Level: "+s.level+"/3","Combo: x"+Math.max(1,s.combo),"Bricks: "+s.bricksLeft];
  if(currentGame==="space")list=["<strong>Score:</strong> "+s.score,"Lives: "+s.lives];
- if(currentGame==="maze")list=["Time: "+Math.floor(s.elapsed)+"s","Steps: "+Math.floor(s.steps)];
  if(currentGame==="survival")list=["Health: "+Math.ceil(s.health)+"%","Wood: "+s.wood+"/8","Berries: "+s.food+"/4"];
  if(currentGame==="jumper")list=["Coins: "+s.coins,"Lives: "+s.lives];
  if(currentGame==="memory")list=["Moves: "+s.moves,"Pairs: "+s.matches+"/6"];
@@ -437,7 +414,6 @@ function loop(ts){
   case"snake":drawSnake(dt);break;
   case"breaker":drawBreaker(dt);break;
   case"space":drawSpace(dt);break;
-  case"maze":drawMaze(dt);break;
   case"survival":drawSurvival(dt);break;
   case"jumper":drawJumper(dt);break;
   case"memory":drawMemory(dt);break;
@@ -692,28 +668,6 @@ function drawSpace(dt){
  text("SPACE DEFENDER",W/2,36,18,"#b9c8eb","center");
 }
 
-function drawMaze(dt){
- const s=state;
- const move=(keys.forward?1:0)-(keys.back?1:0);
- if(keys.turnL)s.angle-=dt*2.1;if(keys.turnR)s.angle+=dt*2.1;
- if(move){const nx=s.px+Math.cos(s.angle)*move*dt*2.1,ny=s.py+Math.sin(s.angle)*move*dt*2.1;if(s.map[Math.floor(ny)]&&s.map[Math.floor(ny)][Math.floor(nx)]===0){s.px=nx;s.py=ny;s.steps+=dt*2.1;}}
- const sky=ctx.createLinearGradient(0,0,0,H/2);sky.addColorStop(0,"#243a5b");sky.addColorStop(1,"#9a9da8");ctx.fillStyle=sky;ctx.fillRect(0,0,W,H/2);
- const floor=ctx.createLinearGradient(0,H/2,0,H);floor.addColorStop(0,"#625d61");floor.addColorStop(1,"#171c2b");ctx.fillStyle=floor;ctx.fillRect(0,H/2,W,H/2);
- for(let x=0;x<W;x+=3){
-  const a=s.angle+(x/W-.5)*Math.PI/2.5;let d=0,hit=false;
-  while(d<16&&!hit){d+=.045;const mx=Math.floor(s.px+Math.cos(a)*d),my=Math.floor(s.py+Math.sin(a)*d);if(!s.map[my]||s.map[my][mx]!==0)hit=true;}
-  const corrected=Math.max(.08,d*Math.cos(a-s.angle)),wallH=Math.min(H,H/(corrected*.72)),shade=Math.max(30,185-corrected*10);
-  ctx.fillStyle="rgb("+Math.floor(shade*.72)+","+Math.floor(shade*.82)+","+Math.floor(shade)+")";ctx.fillRect(x,(H-wallH)/2,3,wallH);
- }
- // Small map helps navigation.
- const cell=8,ox=W-112,oy=22;
- rounded(ox-8,oy-8,104,104,10,"#081221c9","#ffffff45");
- for(let y=0;y<s.map.length;y++)for(let x=0;x<s.map[y].length;x++){ctx.fillStyle=s.map[y][x]?"#42516c":"#a9b6c9";ctx.fillRect(ox+x*cell,oy+y*cell,cell-1,cell-1);}
- ctx.fillStyle="#ffe18c";ctx.fillRect(ox+9*cell,oy+9*cell,cell-1,cell-1);
- ctx.fillStyle="#65e6f1";ctx.beginPath();ctx.arc(ox+s.px*cell,oy+s.py*cell,4,0,Math.PI*2);ctx.fill();
- text("FIND THE GOLD EXIT",W/2,39,17,"#fff0c4","center");
- if(Math.hypot(s.px-9.5,s.py-9.5)<.45)finishGame("You escaped the castle maze in "+Math.floor(s.elapsed)+" seconds!",true);
-}
 function drawSurvival(dt){
  const s=state;
  ctx.fillStyle="#1f563c";ctx.fillRect(0,0,W,H);
@@ -815,8 +769,7 @@ function keyAction(e,down){
   " ":"jump",enter:"fire"
  };
  const action=map[k];
- if(currentGame==="maze"){if(k==="arrowup"||k==="w")keys.forward=down;if(k==="arrowdown"||k==="s")keys.back=down;if(k==="arrowleft"||k==="a")keys.turnL=down;if(k==="arrowright"||k==="d")keys.turnR=down;}
- else if(currentGame==="drift"||currentGame==="parking"||currentGame==="3d"){
+ if(currentGame==="drift"||currentGame==="parking"||currentGame==="3d"){
   if(action==="left"||action==="right")keys[action]=down;
   if(k==="arrowup"||k==="w")keys.accelerate=down;
   if(k==="arrowdown"||k==="s")keys.brake=down;

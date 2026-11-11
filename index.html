@@ -92,6 +92,33 @@ footer{border-top:1px solid #ffffff14;padding:20px 0 28px;text-align:center;font
 @media(max-width:680px){.wrap{width:min(100% - 22px,560px)}.hero{grid-template-columns:1fr;padding:30px 0 22px;gap:17px}.hero-panel{min-height:185px}.hero-crown{font-size:35px}.mini-stats{margin-top:10px}.game-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.game-card{padding:11px;min-height:235px}.card-art{height:88px}.section-head{align-items:start;flex-direction:column}.topbar{height:62px}.top-tag{font-size:10px;padding:7px 9px}.game-top{align-items:flex-start}.game-title-wrap{gap:7px}.back-btn{padding:9px}.game-actions{gap:5px}.small-btn{padding:9px 8px}#stage{height:55vh;min-height:320px}.control-btn{min-width:54px;min-height:48px}}
 @media(max-width:370px){.game-grid{grid-template-columns:1fr}.game-card{min-height:215px}.card-art{height:90px}.brand-name{font-size:13px}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+
+/* KING MASON ARCADE — visual refresh */
+:root{--bg:#070b16;--panel:#111b30;--panel2:#1a2b49;--line:#33496d;--gold:#ffd477;--cyan:#70e6ee;--muted:#aebdd5;--white:#f7f8ff;--shadow:0 22px 65px #0007}
+body{background:radial-gradient(ellipse at 12% -10%,#354c70 0,transparent 36%),radial-gradient(ellipse at 100% 20%,#26334d 0,transparent 30%),linear-gradient(145deg,#070b16,#0c1425 55%,#080d19);background-attachment:fixed}
+.topbar{height:78px;border-bottom:1px solid #ffffff1c;backdrop-filter:blur(12px)}
+.brand-mark{border-radius:13px;box-shadow:0 0 28px #ffd06f35,inset 0 1px #fff9}
+.hero{padding:54px 0 42px;gap:30px}.hero h1{font-size:clamp(42px,7vw,76px);text-shadow:0 8px 35px #0005}.hero-copy{font-size:16px;max-width:610px}
+.hero-panel{min-height:280px;border-radius:28px;background:linear-gradient(145deg,#263c61,#14213a 62%,#10182a);border-color:#8297ba55;box-shadow:0 24px 70px #0006,inset 0 1px #ffffff24}
+.panel-title{font-size:30px}.mini-stat{background:#091222a8;border-color:#ffffff24;backdrop-filter:blur(8px)}
+.library{padding-top:28px}.section-head h2{font-size:29px}.game-grid{gap:17px}
+.game-card{min-height:270px;padding:15px;border-radius:20px;background:linear-gradient(155deg,#1d2e4c,#101a2e 82%);border-color:#ffffff1b;box-shadow:0 8px 24px #0002;transition:transform .22s,border-color .22s,box-shadow .22s}
+.game-card:hover{transform:translateY(-6px) scale(1.012);border-color:#ffd4778a;box-shadow:0 18px 38px #0006,0 0 24px #ffd4770b}
+.card-art{height:118px;border-radius:15px;background-image:radial-gradient(circle at 50% 25%,#ffffff35,transparent 54%),linear-gradient(135deg,#304a70,#121d32);box-shadow:inset 0 1px #ffffff28}
+.card-art>span:last-child{filter:drop-shadow(0 9px 12px #0008);transform:translateY(2px);font-size:54px}
+.game-card h3{font-size:17px}.game-card p{font-size:12.5px;line-height:1.55}.card-meta{font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.play-btn{border-radius:11px;box-shadow:0 6px 18px #e3a83b20;transition:filter .15s,transform .15s}.play-btn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.filter-btn{padding:10px 14px;transition:background .15s,border-color .15s}.filter-btn:not(.active):hover{border-color:#8ca1c5;color:#fff}
+.search-box input{height:48px;border-radius:14px;background:#101a2d;border-color:#405477}
+#gameScreen{padding-top:24px}.game-top{margin-bottom:15px}.back-btn,.small-btn{border-radius:12px;transition:background .15s,border-color .15s}
+.back-btn:hover,.small-btn:hover{background:#263b5d;border-color:#8ba4ce}.hud-pill{padding:8px 13px;background:#172641;border-color:#405579}
+.stage-wrap{padding:8px;border-radius:20px;border-color:#526a91;box-shadow:0 22px 65px #0007}#stage{border-radius:13px}
+#message{font-size:13px;color:#dce8ff}.control-btn{border-radius:13px;min-height:48px;box-shadow:0 6px 16px #0003}
+.control-btn:active{transform:translateY(1px);filter:brightness(1.2)}.tip-box{border-radius:16px;background:linear-gradient(110deg,#172944,#111b30);border-color:#405579}
+footer{padding-top:24px}
+@media(max-width:680px){.hero{padding:34px 0 25px}.hero-panel{min-height:210px}.game-grid{gap:11px}.game-card{min-height:255px;padding:12px}.card-art{height:98px}.section-head h2{font-size:25px}.topbar{height:66px}}
+@media(prefers-reduced-motion:reduce){.game-card,.play-btn,.filter-btn{transition:none}}
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 </head>
@@ -112,7 +139,7 @@ footer{border-top:1px solid #ffffff14;padding:20px 0 28px;text-align:center;font
           <button class="secondary-btn" id="randomBtn">🎲 Pick for me</button>
         </div>
         <div class="mini-stats">
-          <div class="mini-stat"><strong>12</strong><small>Games</small></div>
+          <div class="mini-stat"><strong id="gameCount">12</strong><small>Games</small></div>
           <div class="mini-stat"><strong>5</strong><small>Categories</small></div>
           <div class="mini-stat"><strong>0</strong><small>Downloads</small></div>
         </div>
@@ -181,7 +208,7 @@ const catalog=[
  {id:"snake",name:"Snake Attack",icon:"🐍",category:"action",tag:"CLASSIC",description:"Eat the glowing dots, grow longer, and try not to run into yourself.",type:"Arcade classic",color:"#174837"},
  {id:"breaker",name:"Marshells Favorite Game",icon:"🪐",category:"action",tag:"MARS MISSION",description:"Smash glowing space bricks, catch power-ups, level up, and chase your high score across Mars.",type:"Space arcade",color:"#713f36"},
  {id:"space",name:"Space Defender",icon:"🚀",category:"action",tag:"HIGH SCORE",description:"Protect your ship, blast incoming asteroids, and survive the waves.",type:"2D shooter",color:"#23365c"},
- {id:"maze",name:"Castle Maze",icon:"🏰",category:"adventure",tag:"3D STYLE",description:"Explore a first-person castle maze and find the golden exit.",type:"3D-style adventure",color:"#4a3b5b"},
+ {id:"maze",name:"Backrooms: Level 0",icon:"🟨",category:"adventure",tag:"FIRST-PERSON HORROR",description:"Explore endless yellow halls, collect five fuses, avoid what is wandering nearby, and find the exit.",type:"First-person survival",color:"#81733d"},
  {id:"survival",name:"Island Survival",icon:"🌴",category:"adventure",tag:"EXPLORE",description:"Collect wood and berries, manage your health, and complete your island mission.",type:"Top-down adventure",color:"#28533f"},
  {id:"jumper",name:"Pixel Jumper",icon:"🕹️",category:"adventure",tag:"PLATFORMER",description:"Jump across platforms, grab coins, avoid the gaps, and reach the flag.",type:"2D platformer",color:"#365078"},
 {id:"crossy",name:"Crossy Road",icon:"🐔",category:"action",tag:"ENDLESS HOPPER",description:"Dodge cars, trucks, trains, and rivers in a colorful 3D-style endless road-crossing challenge.",type:"Endless arcade hopper",color:"#477b58"},
@@ -190,6 +217,7 @@ const catalog=[
 ];
 
   let category="all",search="",favorites=new Set(),bestScores={},currentGame="",state={},keys={},raf=0,last=0,paused=false,hudTimer=0,threeRenderer=null,threeScene=null,threeCamera=null,threeWorld=null;
+$("gameCount").textContent=catalog.length;
 try{favorites=new Set(JSON.parse(localStorage.getItem("kma-favorites")||"[]"));bestScores=JSON.parse(localStorage.getItem("kma-best")||"{}");}catch(e){favorites=new Set();bestScores={};}
 function saveLocal(){
  try{localStorage.setItem("kma-favorites",JSON.stringify([...favorites]));localStorage.setItem("kma-best",JSON.stringify(bestScores));}catch(e){}
@@ -245,6 +273,7 @@ function resetCanvasClick(){
 }
 function startGame(id){
  if(id==="crossy"){window.location.href="crossy-road.html";return;}
+ if(id==="maze"){window.location.href="backrooms.html";return;}
  cancelAnimationFrame(raf);dispose3D();currentGame=id;paused=false;keys={};last=0;hudTimer=0;
  $("homeScreen").style.display="none";$("gameScreen").style.display="block";
  const g=catalog.find(x=>x.id===id);$("gameTitle").textContent=g.icon+" "+g.name;
